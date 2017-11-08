@@ -1,27 +1,9 @@
 #!/usr/bin/env python3
 
 from MultipleIterator import MultipleSequencingFileIterator
+from BarcodeParser import BarcodeFileParser
 from os import listdir
 import sys
-
-
-def reverse_complement(string):
-    """Simple reverse complement function used to initialize a barcode dictionary, (original sequence and reverse
-    complement both link to same hash in dictionary).
-    -----------------------------------------------------
-    string='string': string must be composed of BP ATGC
-    returns; reverse complement string"""
-    # reverse string
-    reverse_string = string[::-1]
-    # complementary bp lookup dictionary
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-    all_bases = list(reverse_string)
-    complement_list = []
-    # iterate over string list
-    for i in all_bases:
-        complement_list.append(complement[i])
-    # return joined string
-    return ''.join(complement_list)
 
 
 def duplicates(lst, item):
@@ -51,52 +33,10 @@ def qseq_fastq_conversion(qseq_list):
     fastq_out = fastq_id + '\n' + seq + '\n' + line_3 + '\n' + quality + '\n'
     return fastq_out
 
-
-def barcode_mismatch(barcode='string', mismatch_list=('A', 'T', 'G', 'C', '.'), number_mismatches=2):
-    """Takes a barcode input and outputs a list containing the original barcode and mistmatched barcodes. Will return
-    every possible mismatch based on the mismatch list input.  Slow implementation of designating mismatches, but
-    the script is only used to initialize a hash table. This method is much faster then calculating the hamming distance
-    for every barcode (just pre-computing mismatched barcodes).
-    -----------------------------------------------------
-    barcode;'string' typical Illumina barcodes are 8 bp
-    mismatch_list;list of mismatch characters to be inserted at every barcode position
-    number_mismatches;int number of possible mismatches compared to original barcode to compute, anything above 2
-    mismatches decreases demultiplexing performance
-    returns; a list of barcodes ('strings')"""
-    # initialize list with with input barcode
-    all_barcodes = [barcode]
-    # calculate first set of mismatches
-    if number_mismatches != 0:
-        # loop over possible mismatches
-        for possible_mismatch in mismatch_list:
-            # loop over every position in barcode
-            for character in range(len(barcode)):
-                # barcode to list
-                barcode_list = list(barcode)
-                # set character in to mismatch
-                barcode_list[character] = possible_mismatch
-                # if mismatched barcode not already in list then add the barcode to the list
-                if ''.join(barcode_list) not in all_barcodes:
-                    all_barcodes.append(''.join(barcode_list))
-        if number_mismatches > 1:
-            # initialize additional loops based on mismatch number
-            for count in range(number_mismatches - 1):
-                # repeat loop
-                mismatched_barcodes = list(all_barcodes)
-                for mismatched_barcode in mismatched_barcodes:
-                    for possible_mismatch in mismatch_list:
-                        for character in range(len(mismatched_barcode)):
-                            barcode_list = list(mismatched_barcode)
-                            barcode_list[character] = possible_mismatch
-                            if ''.join(barcode_list) not in all_barcodes:
-                                all_barcodes.append(''.join(barcode_list))
-    return list(set(all_barcodes))
-
-
 class Demuliplex:
     """Opens Illumina qseq directory and processes qseq files, outputs samples fastq files"""
 
-    def __init__(self, *args, directory='path', sample_key='path', mismatch=1, file_label='', barcode_1=None,
+    def __init__(self, *args, directory='path', sample_key='path', mismatch=3, file_label='', barcode_1=None,
                  barcode_2=None, gnu_zipped=False):
         # store file description
         self.file_description = []
@@ -124,74 +64,24 @@ class Demuliplex:
         self.sample_list = []
         self.gnu_zipped = gnu_zipped
 
+    def run(self, output_directory):
+        self.get_directory_lists()
+        self.process_barcodes()
+        self.process_file_label()
+        self.get_sample_labels()
+        self.output_objects(output_directory=output_directory)
+        self.iterate_through_qseq()
+
     def process_barcodes(self):
         """If barcode file supplied process files and store values in dictionary
         -----------------------------------------------------
         opens self.barcode*, a path to text file with a new barcode on each line
         returns self.barcode*, a dictionary hashing barcodes to an Illumina ID"""
-        # todo broke tests by changing hash collision detection
-        if self.barcode_1:
-            collision_sequences = []
-            # initialize dict
-            barcode_dict = {}
-            # loop through barcode text file
-            for count, line in enumerate(open(self.barcode_1)):
-                # replace new line indicator
-                line_split = (line.replace('\n', '')).split('\t')
-                barcode = line_split[0]
-                barcode_number = int(line_split[1])
-                # look up reverse complement
-                reverse_barcode = reverse_complement(barcode)
-                # get list containing barcode and all mismatches
-                barcode_list = barcode_mismatch(barcode, number_mismatches=self.mismatch)
-                # iterate over list and initialize a dictionary key value pair for every barcode
-                for possible_barcode in barcode_list:
-                    if possible_barcode not in collision_sequences:
-                        if possible_barcode not in list(barcode_dict.keys()):
-                            barcode_dict[possible_barcode] = barcode_number
-                        else:
-                            collision_sequences.append(possible_barcode)
-                            del barcode_dict[possible_barcode]
-                # repeat for barcode reverse complement
-                reverse_barcode_list = barcode_mismatch(reverse_barcode, number_mismatches=self.mismatch)
-                for possible_reverse_barcode in reverse_barcode_list:
-                    if possible_reverse_barcode not in collision_sequences:
-                        if possible_reverse_barcode not in list(barcode_dict.keys()):
-                            barcode_dict[possible_reverse_barcode] = barcode_number
-                        else:
-                            collision_sequences.append(possible_reverse_barcode)
-                            del barcode_dict[possible_reverse_barcode]
-            self.barcode_1 = barcode_dict
-        # if barcode_2 file is given, repeat process
+        barcode_1 = BarcodeFileParser(self.barcode_1)
+        self.barcode_1 = barcode_1.get_barcodes()
         if self.barcode_2:
-            collision_sequences = []
-            barcode_dict = {}
-            for count, line in enumerate(open(self.barcode_2)):
-                # replace new line indicator
-                # replace new line indicator
-                line_split = (line.replace('\n', '')).split('\t')
-                barcode = line_split[0]
-                barcode_number = int(line_split[1])
-                # look up reverse complement
-                reverse_barcode = reverse_complement(barcode)
-                barcode_list = barcode_mismatch(barcode, number_mismatches=self.mismatch)
-                for possible_barcode in barcode_list:
-                    if possible_barcode not in collision_sequences:
-                        if possible_barcode not in list(barcode_dict.keys()):
-                            barcode_dict[possible_barcode] = barcode_number
-                        else:
-                            collision_sequences.append(possible_barcode)
-                            del barcode_dict[possible_barcode]
-                # repeat for barcode reverse complement
-                reverse_barcode_list = barcode_mismatch(reverse_barcode, number_mismatches=self.mismatch)
-                for possible_reverse_barcode in reverse_barcode_list:
-                    if possible_reverse_barcode not in collision_sequences:
-                        if possible_reverse_barcode not in list(barcode_dict.keys()):
-                            barcode_dict[possible_reverse_barcode] = barcode_number
-                        else:
-                            collision_sequences.append(possible_reverse_barcode)
-                            del barcode_dict[possible_reverse_barcode]
-            self.barcode_2 = barcode_dict
+            barcode_2 = BarcodeFileParser(self.barcode_2)
+            self.barcode_2 = barcode_2.get_barcodes()
 
     def get_sample_labels(self):
         """Takes sample label file and processes barcode sample IDs.  Note this function assumes 'barcode1 \t barcode 2

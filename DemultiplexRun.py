@@ -5,19 +5,15 @@ import time
 import argparse
 
 
-def launch_demultiplex(*args, directory='path', sample_key='path', mismatch=1, file_label='', barcode_1=None,
+def launch_demultiplex(*args, directory='path', sample_key='path', mismatch=3, file_label='', barcode_1=None,
                        barcode_2=None, output_directory=None, gnu_zipped=False):
     """Simple function to initialize DemultiplexClass"""
     start_time = time.time()
     demultiplex = DemultiplexClass.Demuliplex(*args, directory=directory, barcode_1=barcode_1, barcode_2=barcode_2,
                                               sample_key=sample_key, file_label=file_label, mismatch=mismatch,
                                               gnu_zipped=gnu_zipped)
-    demultiplex.get_directory_lists()
-    demultiplex.process_barcodes()
-    demultiplex.process_file_label()
-    demultiplex.get_sample_labels()
-    demultiplex.output_objects(output_directory=output_directory)
-    demultiplex.iterate_through_qseq()
+
+    demultiplex.run(output_directory=output_directory)
     end_time = time.time()
     print('Total reads:' + str(demultiplex.reads))
     print('Reads passing filter:' + str(demultiplex.reads_pass_filter))

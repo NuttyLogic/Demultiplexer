@@ -12,12 +12,7 @@ test_single_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt',
                                                                       'N700_nextera_barcodes.txt',
                                                             file_label='rb',
                                                             )
-test_single_index_demultiplex.get_directory_lists()
-test_single_index_demultiplex.process_barcodes()
-test_single_index_demultiplex.process_file_label()
-test_single_index_demultiplex.get_sample_labels()
-test_single_index_demultiplex.output_objects(output_directory='tests/test_output/')
-test_single_index_demultiplex.iterate_through_qseq()
+test_single_index_demultiplex.run(output_directory='tests/test_output/')
 
 
 test_dual_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt', '2_test.^.qseq.txt',
@@ -28,21 +23,13 @@ test_dual_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt', '
                                                           barcode_2='tests/test_sample_files/N500_nextera_barcodes.txt',
                                                           file_label='rbbr'
                                                           )
-test_dual_index_demultiplex.get_directory_lists()
-test_dual_index_demultiplex.process_barcodes()
-test_dual_index_demultiplex.process_file_label()
-test_dual_index_demultiplex.get_sample_labels()
-test_dual_index_demultiplex.output_objects(output_directory='tests/test_output/')
-test_dual_index_demultiplex.iterate_through_qseq()
+test_dual_index_demultiplex.run(output_directory='tests/test_output/')
 
 
 class TestDemultiplex(unittest.TestCase):
 
     def setUp(self):
         pass
-
-    def test_reverse_complement(self):
-        self.assertEqual(DemultiplexClass.reverse_complement('GGCTATA'), 'TATAGCC')
 
     def test_single_filter_pass(self):
         self.assertEqual(test_single_index_demultiplex.reads_pass_filter, 19614)
@@ -82,6 +69,7 @@ class TestDemultiplex(unittest.TestCase):
                             '-I', '1_test.^.qseq.txt', '2_test.^.qseq.txt'],
                             stdout=subprocess.PIPE)
         output = parser_open.stdout
+        print(output)
         output_categories = (output.decode()).split('\n')
         filter = int(output_categories[2].split(':')[1])
         indexed = int(output_categories[3].split(':')[1])
@@ -105,8 +93,8 @@ class TestDemultiplex(unittest.TestCase):
         indexed = int(output_categories[3].split(':')[1])
         unmatched = int(output_categories[4].split(':')[1])
         self.assertEqual(filter, 19264)
-        self.assertEqual(indexed, 9420)
-        self.assertEqual(unmatched, 9844)
+        self.assertEqual(indexed, 9844)
+        self.assertEqual(unmatched, 9420)
 
 
 if __name__ == '__main__':
