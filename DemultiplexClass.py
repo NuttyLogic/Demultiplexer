@@ -2,7 +2,7 @@
 
 from MultipleIterator import MultipleSequencingFileIterator
 from BarcodeParser import BarcodeFileParser
-from os import listdir
+import os
 import sys
 
 
@@ -32,6 +32,7 @@ def qseq_fastq_conversion(qseq_list):
     quality = qseq_list[9]
     fastq_out = fastq_id + '\n' + seq + '\n' + line_3 + '\n' + quality + '\n'
     return fastq_out
+
 
 class Demuliplex:
     """Opens Illumina qseq directory and processes qseq files, outputs samples fastq files"""
@@ -126,7 +127,7 @@ class Demuliplex:
         self.file_description: list of lists containing sequencing file prefix and suffix, sequencing file designated
         by prefix*suffix
         returns; sorted list of relevant files names in directory"""
-        file_list = listdir(self.directory)
+        file_list = os.listdir(self.directory)
         # initialize list to hold sample names (ie. coupled file IDs)
         sample_names = [[] for _ in range(len(self.file_description))]
         # key to sort files bases on proper ID
@@ -183,8 +184,11 @@ class Demuliplex:
         object_list = []
         # initialize output objects for unmatched reads
         for count in range(self.read_count):
-            object_list.append(open(output_directory + 'unmatched' + '_' +
-                                    str(count + 1) + '.fastq', 'w'))
+            if os.path.exists(output_directory + 'unmatched' + '_' + str(count + 1) + '.fastq'):
+                object_list.append(open(output_directory + 'unmatched' + '_' + str(count + 1) + '.fastq', 'a'))
+            else:
+                object_list.append(open(output_directory + 'unmatched' + '_' +
+                                        str(count + 1) + '.fastq', 'w'))
         self.output_dict['unmatched'] = object_list
 
     def iterate_through_qseq(self):

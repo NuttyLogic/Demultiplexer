@@ -20,7 +20,7 @@ def my_test_suite():
     return test_suite
 
 setup(name='Demultiplexer',
-      version='0.1.2',
+      version='0.2.0',
       description='Demultiplex Illumina lane .qseq to sample .fastq',
       author='Colin Farrell',
       author_email='colinpfarrell@gmail.com',
