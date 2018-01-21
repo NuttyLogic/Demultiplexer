@@ -4,6 +4,7 @@ from MultipleIterator import MultipleSequencingFileIterator
 from BarcodeParser import BarcodeFileParser
 import os
 import sys
+from concurrent import futures
 
 
 def duplicates(lst, item):
@@ -33,6 +34,14 @@ def qseq_fastq_conversion(qseq_list):
     fastq_out = fastq_id + '\n' + seq + '\n' + line_3 + '\n' + quality + '\n'
     return fastq_out
 
+output_dict = None
+sample_key = None
+file_label = None
+indexed_reads = None
+gnu_zipped = None
+barcode_1 = None
+barcode_2 = None
+directory = None
 
 class Demuliplex:
     """Opens Illumina qseq directory and processes qseq files, outputs samples fastq files"""
@@ -67,10 +76,11 @@ class Demuliplex:
 
     def run(self, output_directory):
         self.get_directory_lists()
-        self.process_barcodes()
+        #self.process_barcodes()
         self.process_file_label()
         self.get_sample_labels()
         self.output_objects(output_directory=output_directory)
+        self.set_outer_scope()
         self.iterate_through_qseq()
 
     def process_barcodes(self):
@@ -191,74 +201,124 @@ class Demuliplex:
                                         str(count + 1) + '.fastq', 'w'))
         self.output_dict['unmatched'] = object_list
 
-    def iterate_through_qseq(self):
-        """Iterate through groups of ID'd qseq files and output demultiplexed fastq files
-        -----------------------------------------------------
-        self.file_list = sorted list of input files;
-        self.barcode*: dictionary of barcodes
-        self.file_label: list of barcode/ read file positions
-        self.output_dict: dict of output objects, 1 per read qseq files
-        returns;
-        self.read = number of reads processes across all of the groups of files
-        self.reads_pass_filter = number of reads that pass the Illumina filter
-        self.indexed_reads = reads matched to sample index
-        self.unmatched_reads = number of unmatched reads
-        """
+    def set_outer_scope(self):
+        reads = self.reads
+        unmatched_read = self.unmatched_read
+        output_dict = self.output_dict
+        sample_key = self.sample_key
+        file_label = self.file_label
+        indexed_reads = self.indexed_reads
+        output_dict = self.output_dict
+        gnu_zipped = self.gnu_zipped
+        indexed_reads = self.indexed_reads
+        unmatched_read = self.unmatched_read
+        barcode_1 = self.barcode_1
+        barcode_2 = self.barcode_2
+        reads_pass_filter = self.reads_pass_filter
+        directory = self.directory
+
+    def iterate_through_qseq(self, workers=2):
         # transpose iterator list
-        self.file_list = list(map(list, zip(*self.file_list)))
+        iterator_file_list = list(map(list, zip(*self.file_list)))
+        print(iterator_file_list)
         # loop through lists of files
-        for files in self.file_list:
-            # initialize iterator object for sorted group of files
-            iterator = MultipleSequencingFileIterator(*files, directory=self.directory, gnu_zipped=self.gnu_zipped)
-            # get position of barcode files
-            barcode_indexes = duplicates(self.file_label, 'barcode')
-            # get position of read files
-            read_indexes = duplicates(self.file_label, 'read')
-            # set barcode list, for looping
-            barcode_list = [self.barcode_1, self.barcode_2]
-            # loop through grouped files
-            for count, line in enumerate(iterator.iterator_zip()):
-                self.reads += 1
-                # set string with Illumina quality control information
-                combined_filter = ''.join([qual[-1] for qual in line])
-                # initialize empty sample_id value
-                sample_id = ''
-                # if all reads don't pass filter don't consider
-                if '0' not in combined_filter:
-                    self.reads_pass_filter += 1
-                    # loop through barcode_indexes, get sample key
-                    for index_count, index in enumerate(barcode_indexes):
-                        try:
-                            # get sequence location in qseq file
-                            key = barcode_list[index_count][line[barcode_indexes[index_count]][8]]
-                        except KeyError:
-                            # if barcode sequence not in barcode dictionary set key to 'x'
-                            key = 'x'
-                        sample_id = '{0}key{1}'.format(sample_id, str(key))
-                    # if barcode matches with key proceed
-                    if 'x' not in sample_id:
-                        try:
-                            # look up sample, if matched set sample name
-                            sample = self.sample_key[sample_id]
-                            self.indexed_reads += 1
-                        except KeyError:
-                            # if sample unmatched write to unmatched reads
-                            self.unmatched_read += 1
-                            sample = 'unmatched'
-                        # retrieve list of output objects
-                        out = self.output_dict[sample]
-                        # write line to file
-                        for out_count, output_object in enumerate(out):
-                            # convert qseq line to fatq format
-                            output_object.write(qseq_fastq_conversion(line[read_indexes[out_count]]))
-                    else:
-                        # if barcode sequence not in dictionary write to unmatched
-                        self.unmatched_read += 1
-                        sample = 'unmatched'
-                        out = self.output_dict[sample]
-                        for out_count, output_object in enumerate(out):
-                            output_object.write(qseq_fastq_conversion(line[read_indexes[out_count]]))
+        #with futures.ProcessPoolExecutor(workers) as executor:
+        #    res = executor.map(process_qseq, iterator_file_list)
+        #res = map(process_qseq, iterator_file_list)
+        for iterator_file in iterator_file_list:
+            print(iterator_file)
+            process_qseq(iterator_file)
+        #print(res)
+        #map(self.process_qseq, iterator_file_list)
         # close all output objects
         for sample in self.output_dict.values():
             for out_object in sample:
                 out_object.close()
+
+
+def process_qseq(input_list):
+    """Iterate through groups of ID'd qseq files and output demultiplexed fastq files
+    -----------------------------------------------------
+    self.file_list = sorted list of input files;
+    self.barcode*: dictionary of barcodes
+    self.file_label: list of barcode/ read file positions
+    self.output_dict: dict of output objects, 1 per read qseq files
+    returns;
+    self.read = number of reads processes across all of the groups of files
+    self.reads_pass_filter = number of reads that pass the Illumina filter
+    self.indexed_reads = reads matched to sample index
+    self.unmatched_reads = number of unmatched reads
+    """
+    # initialize iterator object for sorted group of files
+    reads = 0
+    indexed_reads = 0
+    unmatched_read = 0
+    reads_pass_filter = 0
+    iterator = MultipleSequencingFileIterator(*input_list, directory=directory, gnu_zipped=gnu_zipped)
+    # get position of barcode files
+    barcode_indexes = duplicates(file_label, 'barcode')
+    # get position of read files
+    read_indexes = duplicates(file_label, 'read')
+    # set barcode list, for looping
+    barcode_list = [barcode_1, barcode_2]
+    # loop through grouped files
+    for count, line in enumerate(iterator.iterator_zip()):
+        reads += 1
+        # set string with Illumina quality control information
+        combined_filter = ''.join([qual[-1] for qual in line])
+        # initialize empty sample_id value
+        sample_id = ''
+        # if all reads don't pass filter don't consider
+        if '0' not in combined_filter:
+            reads_pass_filter += 1
+            # loop through barcode_indexes, get sample key
+            for index_count, index in enumerate(barcode_indexes):
+                try:
+                    # get sequence location in qseq file
+                    key = barcode_list[index_count][line[barcode_indexes[index_count]][8]]
+                except KeyError:
+                    # if barcode sequence not in barcode dictionary set key to 'x'
+                    key = 'x'
+                sample_id = '{0}key{1}'.format(sample_id, str(key))
+            # if barcode matches with key proceed
+            if 'x' not in sample_id:
+                try:
+                    # look up sample, if matched set sample name
+                    sample = sample_key[sample_id]
+                    indexed_reads += 1
+                except KeyError:
+                    # if sample unmatched write to unmatched reads
+                    unmatched_read += 1
+                    sample = 'unmatched'
+                # retrieve list of output objects
+                out = output_dict[sample]
+                # write line to file
+                for out_count, output_object in enumerate(out):
+                    # convert qseq line to fatq format
+                    output_object.write(qseq_fastq_conversion(line[read_indexes[out_count]]))
+            else:
+                # if barcode sequence not in dictionary write to unmatched
+                unmatched_read += 1
+                sample = 'unmatched'
+                out = output_dict[sample]
+                for out_count, output_object in enumerate(out):
+                    output_object.write(qseq_fastq_conversion(line[read_indexes[out_count]]))
+    print([reads, unmatched_read, indexed_reads, reads_pass_filter])
+    return [reads, unmatched_read, indexed_reads, reads_pass_filter]
+
+
+
+test = Demuliplex('1_test.^.qseq.txt', '2_test.^.qseq.txt', directory='tests/test_qseq/',
+sample_key='tests/test_sample_files/single_index_test.txt', barcode_1='tests/test_sample_files/'   
+          'N700_nextera_barcodes.txt',
+file_label='rb')
+
+test.run(output_directory='tests/test_output/')
+
+print(output_dict,
+sample_key,
+file_label,
+indexed_reads,
+gnu_zipped,
+barcode_1,
+barcode_2)

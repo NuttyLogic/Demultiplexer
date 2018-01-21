@@ -10,8 +10,7 @@ test_single_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt',
                                                             sample_key='tests/test_sample_files/single_index_test.txt',
                                                             barcode_1='tests/test_sample_files/'
                                                                       'N700_nextera_barcodes.txt',
-                                                            file_label='rb',
-                                                            )
+                                                            file_label='rb')
 test_single_index_demultiplex.run(output_directory='tests/test_output/')
 
 
