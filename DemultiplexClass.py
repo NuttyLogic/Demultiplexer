@@ -43,6 +43,7 @@ barcode_1 = None
 barcode_2 = None
 directory = None
 
+
 class Demuliplex:
     """Opens Illumina qseq directory and processes qseq files, outputs samples fastq files"""
 

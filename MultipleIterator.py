@@ -7,7 +7,7 @@ import io
 class MultipleSequencingFileIterator:
     """Open multiple fastq or gseq files together and iterate over them as a group"""
 
-    def __init__(self, *args, directory='path', gnu_zipped=False):
+    def __init__(self, input_file, directory='path', gnu_zipped=False):
         """Initiate iteration object, yield line in gseq files
          -----------------------------------------------------
          *args='path_to_gesq': returns an iterator object for paired sequencing files
@@ -15,7 +15,7 @@ class MultipleSequencingFileIterator:
          unix gunzip is faster"""
         file_list = []
         # store files in list
-        for file in args:
+        for file in input_file.split('?'):
             file_list.append(directory + file)
 
         # iterator initializer

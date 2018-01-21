@@ -7,10 +7,10 @@ class BarcodeFileParser:
 
     def __init__(self,
                  path=None,
-                 mismatch=1):
+                 rev=False):
 
         self.path = path
-        self.mismatch = 0 if mismatch <= 0 else mismatch
+        self.rev = rev
         self.mismatch_list = ['A', 'T', 'G', 'C', '.']
         self.barcode_list = []
 
@@ -53,10 +53,14 @@ class BarcodeFileParser:
         for count, barcode in enumerate(self.barcode_list):
             barcode_list.append([[barcode.get(), barcode.reverse()]])
             barcode_higher.append(str(barcode.get()))
-            barcode_higher.append(str(barcode.reverse()))
+            if self.rev:
+                barcode_higher.append(str(barcode.reverse()))
             forward = BarcodeFileParser.mismatch(barcode.get(), self.mismatch_list)
-            reverse = BarcodeFileParser.mismatch(barcode.reverse(), self.mismatch_list)
-            all_barcodes = list(set(forward + reverse))
+            if self.rev:
+                reverse = BarcodeFileParser.mismatch(barcode.reverse(), self.mismatch_list)
+                all_barcodes = list(set(forward + reverse))
+            else:
+                all_barcodes = list(set(forward))
             barcode_list[count].append(all_barcodes)
             barcode_lower = barcode_lower + all_barcodes
 
