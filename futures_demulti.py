@@ -7,6 +7,7 @@ import sys
 from concurrent import futures
 import threading as th
 from multiprocessing import Process
+from multiprocessing import Pool
 import time
 
 
@@ -71,19 +72,22 @@ def iterate_through_qseq(file_list=None, workers=8):
     iterator_file_list = list(map(list, zip(file_list)))
     # loop through lists of files
     start = time.time()
-    for iterator_file in iterator_file_list[0]:
-        qseq_input = '?'.join(iterator_file)
-        p = Process(target=process_qseq, args=(qseq_input,))
-        p.start()
+    pool = Pool(processes=workers)
+    jobs = []
+    print(iterator_file_list)
+    for iterator_file in iterator_file_list:
+        qseq_input = '?'.join(iterator_file[0])
+        print(qseq_input)
+        proc = pool.apply_async(func=process_qseq(qseq_input), args=(qseq_input,))
+        jobs.append(proc)
+    # Wait for jobs to complete before exiting
+    while (not all([p.ready() for p in jobs])):
+        time.sleep(5)
+    # Safely terminate the pool
+    pool.close()
+    pool.join()
     end = time.time()
     print(end - start)
-    #res = map(process_qseq, iterator_file_list)
-    start = time.time()
-    end = time.time()
-    print(end - start)
-    #print(res)
-    #map(self.process_qseq, iterator_file_list)
-    # close all output objects
     for sample in output_dictionary.values():
         for out_object in sample:
             out_object.close()
