@@ -23,6 +23,8 @@ class ProcessDemultiplexInput:
         self.barcode_2 = barcode_2
         self.barcode_count = None
         self.read_count = None
+        self.left_offset = 0
+        self.right_offset = 0
 
     def run(self, b1_reverse=False, b2_reverse=False):
         self.get_directory_lists()
@@ -34,7 +36,9 @@ class ProcessDemultiplexInput:
         """If barcode file supplied process files and store values in dictionary
         -----------------------------------------------------
         opens self.barcode*, a path to text file with a new barcode on each line
-        returns self.barcode*, a dictionary hashing barcodes to an Illumina ID"""
+        returns self.barcode*, a dictionary hashing barcodes to an Illumina ID
+        returns self.left_offset, set barcode read offset if barcode length differs from read length
+        returns self.right_offset, default barcode length equal to read length"""
         barcode_1 = BarcodeFileParser(path=self.barcode_1, rev=barcode1_reverse)
         barcode_1 = barcode_1.get_barcodes()
         if self.barcode_2:
@@ -44,6 +48,8 @@ class ProcessDemultiplexInput:
             barcode_2 = None
         self.barcode_1 = barcode_1
         self.barcode_2 = barcode_2
+        self.left_offset = 0
+        self.right_offset = len(list(self.barcode_1.keys())[0])
 
     def get_sample_labels(self):
         """Takes sample label file and processes barcode sample IDs.  Note this function assumes 'barcode1 \t barcode 2

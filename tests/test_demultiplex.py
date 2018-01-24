@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
 
-import unittest
-import DemultiplexClass
 import subprocess
+import unittest
 
+from demultiplex_input_process import ProcessDemultiplexInput
+from futures_demulti import *
 
-test_single_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt', '2_test.^.qseq.txt',
+test_single_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_test.^.qseq.txt',
                                                             directory='tests/test_qseq/',
                                                             sample_key='tests/test_sample_files/single_index_test.txt',
                                                             barcode_1='tests/test_sample_files/'
                                                                       'N700_nextera_barcodes.txt',
                                                             file_label='rb')
-test_single_index_demultiplex.run(output_directory='tests/test_output/')
+test_single_index_demultiplex.run(b1_reverse=True, b2_reverse=True)
+output_run_single = output_objects(sample_list=test_single_index_demultiplex.sample_list,
+                            output_directory='tests/test_output/',
+                            read_count=test_single_index_demultiplex.read_count)
 
+test_single_metrics = iterate_through_qseq(workers=2, demultiplex_instance=test_single_index_demultiplex,
+                                           output_dictionary=output_run_single, gnu_zipped=False)
 
-test_dual_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt', '2_test.^.qseq.txt',
+test_dual_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_test.^.qseq.txt',
                                                           '3_test.^.qseq.txt', '4_test.^.qseq.txt',
                                                           directory='tests/test_qseq/',
                                                           sample_key='tests/test_sample_files/dual_index_test.txt',
@@ -22,7 +28,13 @@ test_dual_index_demultiplex = DemultiplexClass.Demuliplex('1_test.^.qseq.txt', '
                                                           barcode_2='tests/test_sample_files/N500_nextera_barcodes.txt',
                                                           file_label='rbbr'
                                                           )
-test_dual_index_demultiplex.run(output_directory='tests/test_output/')
+test_dual_index_demultiplex.run(b1_reverse=True, b2_reverse=True)
+output_run_dual = output_objects(sample_list=test_dual_index_demultiplex.sample_list,
+                            output_directory='tests/test_output/',
+                            read_count=test_dual_index_demultiplex.read_count)
+
+test_dual_metrics = iterate_through_qseq(workers=2, demultiplex_instance=test_dual_index_demultiplex,
+                                           output_dictionary=output_run_dual, gnu_zipped=False)
 
 
 class TestDemultiplex(unittest.TestCase):
@@ -31,13 +43,13 @@ class TestDemultiplex(unittest.TestCase):
         pass
 
     def test_single_filter_pass(self):
-        self.assertEqual(test_single_index_demultiplex.reads_pass_filter, 19614)
+        self.assertEqual(sum(test_single_metrics.reads_pass_filter), 19614)
 
     def test_single_unmatched_reads(self):
-        self.assertEqual(test_single_index_demultiplex.unmatched_read, 2774)
+        self.assertEqual(sum(test_single_metrics.unmatched_reads), 2774)
 
     def test_single_index_reads(self):
-        self.assertEqual(test_single_index_demultiplex.indexed_reads, 16840)
+        self.assertEqual(sum(test_single_metrics.indexed_reads), 16840)
 
     def test_single_samples(self):
         x = test_single_index_demultiplex.file_list[0][0].replace('1_test', '')
@@ -45,16 +57,16 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(x, y)
 
     def test_dual_filter_pass(self):
-        self.assertEqual(test_dual_index_demultiplex.reads_pass_filter, 19264)
+        self.assertEqual(sum(test_dual_metrics.reads_pass_filter), 19264)
 
     def test_total_reads(self):
-        self.assertEqual(test_single_index_demultiplex.reads, test_dual_index_demultiplex.reads)
+        self.assertEqual(sum(test_dual_metrics.reads), sum(test_single_metrics.reads))
 
     def test_dual_unmatched_reads(self):
-        self.assertEqual(test_dual_index_demultiplex.unmatched_read, 9420)
+        self.assertEqual(sum(test_dual_metrics.unmatched_reads), 9420)
 
     def test_dual_index_reads(self):
-        self.assertEqual(test_dual_index_demultiplex.indexed_reads, 9844)
+        self.assertEqual(sum(test_dual_metrics.indexed_reads), 9844)
 
     def test_dual_samples(self):
         x = test_dual_index_demultiplex.file_list[1][2].replace('3_test', '')
@@ -62,8 +74,8 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(x, y)
 
     def test_command_line_single_index(self):
-        parser_open = subprocess.run(['python3', 'DemultiplexRun.py', '-D', 'tests/test_qseq/', '-S',
-                            'tests/test_sample_files/single_index_test.txt', '-B1',
+        parser_open = subprocess.run(['python3', 'run_demultiplex.py', '-D', 'tests/test_qseq/', '-S',
+                            'tests/test_sample_files/single_index_test.txt', '-B1', '-W', '2',
                             'tests/test_sample_files/N700_nextera_barcodes.txt', '-L', 'rb', '-O', 'tests/test_output/',
                             '-I', '1_test.^.qseq.txt', '2_test.^.qseq.txt'],
                             stdout=subprocess.PIPE)
@@ -78,7 +90,7 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(unmatched, 2774)
 
     def test_command_line_dual_index(self):
-        parser_open = subprocess.run(['python3', 'DemultiplexRun.py', '-D', 'tests/test_qseq/', '-S',
+        parser_open = subprocess.run(['python3', 'run_demultiplex.py', '-D', 'tests/test_qseq/', '-S',
                                       'tests/test_sample_files/dual_index_test.txt', '-B1',
                                       'tests/test_sample_files/N700_nextera_barcodes.txt', '-B2',
                                       'tests/test_sample_files/N500_nextera_barcodes.txt', '-L', 'rbbr', '-O',

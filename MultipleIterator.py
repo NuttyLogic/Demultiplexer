@@ -15,7 +15,7 @@ class MultipleSequencingFileIterator:
          unix gunzip is faster"""
         file_list = []
         # store files in list
-        for file in input_file.split('?'):
+        for file in input_file:
             file_list.append(directory + file)
 
         # iterator initializer
