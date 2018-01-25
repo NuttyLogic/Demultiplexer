@@ -6,7 +6,8 @@ and calculates 3 mismatches by defualt.
 ## Usage
 
 ```python
-python3 Demultiplex -W cores -D directory -S sample_key -B1 barcode_1 -B2 barcode_2 -L file_labels -O output_directory -I input_file_1 input_file_2 ...```
+python3 Demultiplex -W cores -D directory -S sample_key -B1 barcode_1 -B2 barcode_2 -L file_labels -O output_directory -I input_file_1 input_file_2 ...
+```
 
 ## Inputs
 
@@ -27,19 +28,19 @@ python3 Demultiplex -W cores -D directory -S sample_key -B1 barcode_1 -B2 barcod
 ### Single Index Demultiplex
 
 ```python
-python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -L 'rb' -M 1 -O ~/Demultiplexer/tests/test_output/ -I 1_test.\^.qseq.txt 2_test.\^.qseq.txt
+python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -L 'rb' -M 1 -O ~/Demultiplexer/tests/test_output/ -I 1_test.^.qseq.txt 2_test.^.qseq.txt
 ```
 ### Dual Index Demultiplex
 
 ```python
-python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -B1R -B2 ~/Demultiplexer/tests/test_sample_files/N500_nextera_bacrodes.txt -B2R -L 'rbbr'  -O ~/Demultiplexer/tests/test_output/ -I 1_test.\^.qseq.txt 2_test.\^.qseq.txt 3_test.\^.qseq.txt 4_test.\^.qseq.txt
+python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -B1R -B2 ~/Demultiplexer/tests/test_sample_files/N500_nextera_bacrodes.txt -B2R -L 'rbbr'  -O ~/Demultiplexer/tests/test_output/ -I 1_test.^.qseq.txt 2_test.^.qseq.txt 3_test.^.qseq.txt 4_test.^.qseq.txt
 ```
 
-### Demultiplex Multiple Read Files with Single Index
+### Multiple Read Files with Single Index
 
 ```python
-python3	Demultiplex.py	-D	~/tests/test_qseq/	-S	~/tests/test_sample_files/single_index_test.txt	-B1	~/tests/test_sample_files/N700_nextera_barcodes.txt	-W	2	-L	rrb	-O	~/tests/test_output/	-I	1_test.^.qseq.txt	4_test.\^.qseq.txt 2_test.^.qseq.txt
+python3	Demultiplex.py	-D	~/tests/test_qseq/	-S ~/tests/test_sample_files/single_index_test.txt	-B1	~/tests/test_sample_files/N700_nextera_barcodes.txt	-W	2	-L	rrb	-O	~/tests/test_output/	-I	1_test.^.qseq.txt	4_test.^.qseq.txt 2_test.^.qseq.txt
 ```
 
 ## Setup/Requirements
-- Download a [release](https://github.com/NuttyLogic/Demultiplexer/release), exract, and run. Demultiplex will work with python > 3.4. 
+- Download a [release](https://github.com/NuttyLogic/Demultiplexer/release), exract, and run. Demultiplex will work with python > 3.4.
