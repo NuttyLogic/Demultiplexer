@@ -1,159 +1,64 @@
-#! /usr/env python3
+#!/usr/bin/env python3
 
-from MultipleIterator import MultipleSequencingFileIterator
-from os import listdir
-
-
-def hamming_distance(s1, s2):
-    """Used to calculate mismatches between barcode and sequence call"""
-    assert len(s1) == len(s2)
-    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
+from futures_demulti import *
+from demultiplex_input_process import ProcessDemultiplexInput
+import time
+import argparse
 
 
-def reverse_complement(string):
-    reverse_string = string[::-1]
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-    all_bases = list(reverse_string)
-    complement_list = []
-    for i in all_bases:
-        complement_list.append(complement[i])
-    return ''.join(complement_list)
+def launch_demultiplex(*args, directory='path', sample_key='path', file_label='', barcode_1=None,
+                       barcode_2=None, output_directory=None, b1_reverse=False, b2_reverse=False, gnu_zipped=False,
+                       workers=2):
+    """Simple function to initialize DemultiplexClass"""
+    start_time = time.time()
+    demultiplex_input = ProcessDemultiplexInput(*args, directory=directory,
+                                                sample_key=sample_key,
+                                                barcode_1=barcode_1, barcode_2=barcode_2, file_label=file_label
+                                                )
+    demultiplex_input.run(b1_reverse=b1_reverse, b2_reverse=b2_reverse)
+    output_run = output_objects(sample_list=demultiplex_input.sample_list, output_directory=output_directory,
+                                read_count=demultiplex_input.read_count)
+    run_metrics = iterate_through_qseq(demultiplex_instance=demultiplex_input,
+                                       output_dictionary=output_run, gnu_zipped=gnu_zipped, workers=workers)
+
+    end_time = time.time()
+    print('Total reads:' + str(sum(run_metrics.reads)))
+    print('Reads passing filter:' + str(sum(run_metrics.reads_pass_filter)))
+    print('Indexed reads:' + str(sum(run_metrics.indexed_reads)))
+    print('Unmatched reads:' + str(sum(run_metrics.unmatched_reads)))
+    print('Total time:' + str(round((end_time - start_time) / 60.0, 2)) + ' minutes')
 
 
-def duplicates(lst, item):
-    return [i for i, x in enumerate(lst) if x == item]
+parser = argparse.ArgumentParser(description='Demultiplexing script. Script demultiplexes Illumnina qseq lane files '
+                                             'outputing sample fastq files. Works with .gz and uncompressed qseq files.'
+                                             ' Options for single and dual indexes'
+                                             '\n\n Usage; demultiplex -D directory -S sample_key'
+                                             ' -B1 barcode_1 -B2 barcode_2 -L file_labels -M mismatch_number -O '
+                                             'output_directory -I input_file_1 input_file_2 ...')
 
+parser.add_argument('-D', type=str, help='/path/ to qseq directory')
+parser.add_argument('-S', type=str, help='/path/sample_file.txt file should be formatted as \''
+                                         'barcode tab sample_name\' for single index and '
+                                         '\'barcode tab barcode tab sample_name\' '
+                                         'for dual indexes ')
+parser.add_argument('-B1', type=str, help='/path/barcode_1_file, barcode \t index key')
+parser.add_argument('-B2', type=str, default=None, help='/path/barcode_2_file, barcode \t index key')
+parser.add_argument('-B1R', action="store_true", default=False, help='Consider Barcode1 Reverse Complement')
+parser.add_argument('-B2R', action="store_true", default=False, help='Consider Barcode2 Reverse Complement')
+parser.add_argument('-L', type=str, help='string of r and b character to designate input files as '
+                                         'barcode or read files, should be the same order as input'
+                                         'file')
+parser.add_argument('-W', type=int, default=2, help='Number of cores available, default = 2')
 
-def qseq_fastq_conversion(qseq_list):
-    fastq_id = '@%s:%s:%s:%s:%s#%s/%s' % (qseq_list[0], qseq_list[2], qseq_list[3], qseq_list[4],
-                                          qseq_list[5], qseq_list[6], qseq_list[7])
-    seq = qseq_list[8].replace('.', 'N')
-    line_3 = '+'
-    quality = qseq_list[9]
-    fastq_out = fastq_id + '\n' + seq + '\n' + line_3 + '\n' + quality + '\n'
-    return fastq_out
+parser.add_argument('-O', type=str, help='path to output directory')
+parser.add_argument('-Z', action="store_true", default=False, help='if qseq files gzipped, slows processing')
+parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix separated'
+                                                    'by ^, ie. -I s_1_^.qseq.txt '
+                                                    's_2_^.qseq.txt ')
+arguments = parser.parse_args()
 
+print('Started Job')
 
-class Demuliplex:
-
-    def __init__(self, *args, directory='path', sample_key='path', mismatch=1, file_label='rbbr', barcode_1=None,
-                 barcode_2=None):
-        self.file_description = []
-        for arg in args:
-            self.file_description.append(arg.split('*'))
-        if len(file_label) != len(self.file_description):
-            print('something is wrong')
-        self.directory = directory
-        self.mismatch = mismatch
-        self.file_label = file_label
-        self.barcode_1 = barcode_1
-        self.barcode_2 = barcode_2
-        self.sample_key = sample_key
-        self.file_list = []
-        self.output_dict = {}
-        self.barcode_count = None
-        self.reads = 0
-        self.reads_pass_filter = 0
-        self.unmatched_read = 0
-        self.sample_list = []
-
-    def process_barcodes(self):
-        if self.barcode_1:
-            barcode_dict = {}
-            for count, line in enumerate(open(self.barcode_1)):
-                barcode = line.replace('\n', '')
-                reverse_barcode = reverse_complement(barcode)
-                barcode_dict[barcode] = count + 1
-                barcode_dict[reverse_barcode] = count + 1
-            self.barcode_1 = barcode_dict
-        if self.barcode_2:
-            barcode_dict = {}
-            for count, line in enumerate(open(self.barcode_2)):
-                barcode = line.replace('\n', '')
-                reverse_barcode = reverse_complement(barcode)
-                barcode_dict[barcode] = count + 1
-                barcode_dict[reverse_barcode] = count + 1
-            self.barcode_2 = barcode_dict
-
-    def get_sample_labels(self):
-        """Barcode1, barcode2, sample_name"""
-        sample_dict = {}
-        for line in open(self.sample_key):
-            line_replace = line.replace('\n', '')
-            line_split = line_replace.split('\t')
-            if self.barcode_2:
-                sample_dict['key' + str(int(line_split[0])) + ' key' + str(int(line_split[1]))] = line_split[2]
-                self.sample_list.append(line_split[2])
-            else:
-                sample_dict[line_split[1]] = int(line_split[0])
-        self.sample_key = sample_dict
-
-    def get_directory_lists(self):
-        file_list = listdir(self.directory)
-        sample_names = [[] for x in range(len(self.file_description))]
-        sorting_key = [[] for y in range(len(self.file_description))]
-        for count, file_title in enumerate(self.file_description):
-            for file_name in file_list:
-                if file_title[0] in file_name:
-                    sample_names[count].append(file_name)
-                    sort_id = int((file_name.replace(file_title[0], '')).replace(file_title[1], ''))
-                    sorting_key[count].append(sort_id)
-        for count, seq_file_list in enumerate(sample_names):
-            self.file_list.append([x for x, y in sorted(zip(sample_names[count], sorting_key[count]))])
-
-    def process_file_label(self):
-        label_list = []
-        for character in self.file_label:
-            if character.lower() == 'r':
-                label_list.append('read')
-            elif character.lower() == 'b':
-                label_list.append('barcode')
-        self.file_label = label_list
-        self.barcode_count = label_list.count('barcode')
-
-    def output_objects(self, output_directory='path'):
-        for sample in self.sample_list:
-            object_list = []
-            for count in range(self.barcode_count):
-                object_list.append(open(output_directory + sample + '_' +
-                                        str(count + 1) + '.fastq', 'w'))
-            self.output_dict[sample] = object_list
-        object_list = []
-        for count in range(self.barcode_count):
-            object_list.append(open(output_directory + 'unmatched' + '_' +
-                                    str(count + 1) + '.fastq', 'w'))
-        self.output_dict['unmatched'] = object_list
-
-    def iterate_through_gseq(self):
-        # transpose iterator list
-        self.file_list = list(map(list, zip(*self.file_list)))
-        for files in self.file_list:
-            iterator = MultipleSequencingFileIterator(*files, directory=self.directory)
-            barcode_indexs = duplicates(self.file_label, 'barcode')
-            read_indexs = duplicates(self.file_label, 'read')
-            for count, line in enumerate(iterator.iterator_zip()):
-                self.reads += 1
-                combined_filter = ''.join([qual[-1] for qual in line])
-                if '0' not in combined_filter:
-                    self.reads_pass_filter += 1
-                    try:
-                        key1 = self.barcode_1[line[barcode_indexs[0]][8]]
-                    except KeyError:
-                        key1 = None
-                    try:
-                        key2 = self.barcode_2[line[barcode_indexs[1]][8]]
-                    except KeyError:
-                        key2 = None
-                    if key1 and key2:
-                        sample_id = 'key' + str(key1) + ' key' + str(key2)
-                        try:
-                            sample = self.sample_key[sample_id]
-                        except KeyError:
-                            self.unmatched_read += 1
-                            sample = 'unmatched'
-                        out = self.output_dict[sample]
-                        out[0].write(qseq_fastq_conversion(line[read_indexs[0]]))
-                        out[1].write(qseq_fastq_conversion(line[read_indexs[1]]))
-        for sample in self.output_dict.values():
-            for out_object in sample:
-                out_object.close()
+launch_demultiplex(*arguments.I, directory=arguments.D, barcode_1=arguments.B1, barcode_2=arguments.B2,
+                   sample_key=arguments.S, output_directory=arguments.O, workers=arguments.W, gnu_zipped=arguments.Z,
+                   file_label=arguments.L, b1_reverse=arguments.B1, b2_reverse=arguments.B2)

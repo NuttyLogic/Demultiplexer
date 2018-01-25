@@ -53,7 +53,7 @@ class TestDemultiplex(unittest.TestCase):
 
     def test_single_samples(self):
         x = test_single_index_demultiplex.file_list[0][0].replace('1_test', '')
-        y = test_single_index_demultiplex.file_list[0][1].replace('2_test', '')
+        y = test_single_index_demultiplex.file_list[1][0].replace('2_test', '')
         self.assertEqual(x, y)
 
     def test_dual_filter_pass(self):
@@ -69,18 +69,19 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(sum(test_dual_metrics.indexed_reads), 9844)
 
     def test_dual_samples(self):
-        x = test_dual_index_demultiplex.file_list[1][2].replace('3_test', '')
-        y = test_dual_index_demultiplex.file_list[1][3].replace('4_test', '')
+        print(test_dual_index_demultiplex.file_list)
+        x = test_dual_index_demultiplex.file_list[2][0].replace('3_test', '')
+        y = test_dual_index_demultiplex.file_list[3][0].replace('4_test', '')
         self.assertEqual(x, y)
 
     def test_command_line_single_index(self):
-        parser_open = subprocess.run(['python3', 'run_demultiplex.py', '-D', 'tests/test_qseq/', '-S',
-                            'tests/test_sample_files/single_index_test.txt', '-B1', '-W', '2',
-                            'tests/test_sample_files/N700_nextera_barcodes.txt', '-L', 'rb', '-O', 'tests/test_output/',
+        parser_open = subprocess.run(['python3', 'Demultiplex.py', '-D', 'tests/test_qseq/', '-S',
+                            'tests/test_sample_files/single_index_test.txt', '-B1',
+                            'tests/test_sample_files/N700_nextera_barcodes.txt', '-W', '2',
+                                      '-L', 'rb', '-O', 'tests/test_output/',
                             '-I', '1_test.^.qseq.txt', '2_test.^.qseq.txt'],
                             stdout=subprocess.PIPE)
         output = parser_open.stdout
-        print(output)
         output_categories = (output.decode()).split('\n')
         filter = int(output_categories[2].split(':')[1])
         indexed = int(output_categories[3].split(':')[1])
@@ -90,7 +91,7 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(unmatched, 2774)
 
     def test_command_line_dual_index(self):
-        parser_open = subprocess.run(['python3', 'run_demultiplex.py', '-D', 'tests/test_qseq/', '-S',
+        parser_open = subprocess.run(['python3', 'Demultiplex.py', '-D', 'tests/test_qseq/', '-S',
                                       'tests/test_sample_files/dual_index_test.txt', '-B1',
                                       'tests/test_sample_files/N700_nextera_barcodes.txt', '-B2',
                                       'tests/test_sample_files/N500_nextera_barcodes.txt', '-L', 'rbbr', '-O',
