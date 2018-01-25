@@ -57,8 +57,11 @@ parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix
                                                     's_2_^.qseq.txt ')
 arguments = parser.parse_args()
 
-print('Started Job')
 
-launch_demultiplex(*arguments.I, directory=arguments.D, barcode_1=arguments.B1, barcode_2=arguments.B2,
-                   sample_key=arguments.S, output_directory=arguments.O, workers=arguments.W, gnu_zipped=arguments.Z,
-                   file_label=arguments.L, b1_reverse=arguments.B1, b2_reverse=arguments.B2)
+try:
+    print('Working')
+    launch_demultiplex(*arguments.I, directory=arguments.D, barcode_1=arguments.B1, barcode_2=arguments.B2,
+                       sample_key=arguments.S, output_directory=arguments.O, workers=arguments.W, gnu_zipped=arguments.Z,
+                       file_label=arguments.L, b1_reverse=arguments.B1, b2_reverse=arguments.B2)
+except TypeError:
+    print('python3 Demultiplex.py --help, for usage')
