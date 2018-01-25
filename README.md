@@ -28,7 +28,7 @@ python3 Demultiplex -W cores -D directory -S sample_key -B1 barcode_1 -B2 barcod
 ### Single Index Demultiplex
 
 ```python
-python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -L 'rb' -M 1 -O ~/Demultiplexer/tests/test_output/ -I 1_test.\^.qseq.txt 2_test.\^.qseq.txt
+python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -L 'rb' -M 1 -O ~/Demultiplexer/tests/test_output/ -I 1_test.^.qseq.txt 2_test.^.qseq.txt
 ```
 ### Dual Index Demultiplex
 
