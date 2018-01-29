@@ -16,16 +16,14 @@ def launch_demultiplex(*args, directory='path', sample_key='path', file_label=''
                                                 barcode_1=barcode_1, barcode_2=barcode_2, file_label=file_label
                                                 )
     demultiplex_input.run(b1_reverse=b1_reverse, b2_reverse=b2_reverse)
-    output_run = output_objects(sample_list=demultiplex_input.sample_list, output_directory=output_directory,
-                                read_count=demultiplex_input.read_count)
     run_metrics = iterate_through_qseq(demultiplex_instance=demultiplex_input,
-                                       output_dictionary=output_run, gnu_zipped=gnu_zipped, workers=workers)
+                                       output_directory=output_directory, gnu_zipped=gnu_zipped, workers=workers)
 
     end_time = time.time()
-    print('Total reads:' + str(sum(run_metrics.reads)))
-    print('Reads passing filter:' + str(sum(run_metrics.reads_pass_filter)))
-    print('Indexed reads:' + str(sum(run_metrics.indexed_reads)))
-    print('Unmatched reads:' + str(sum(run_metrics.unmatched_reads)))
+    print('Total reads:' + str(run_metrics[0]))
+    print('Reads passing filter:' + str(run_metrics[3]))
+    print('Indexed reads:' + str(run_metrics[2]))
+    print('Unmatched reads:' + str(run_metrics[1]))
     print('Total time:' + str(round((end_time - start_time) / 60.0, 2)) + ' minutes')
 
 

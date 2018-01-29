@@ -43,4 +43,4 @@ python3	Demultiplex.py	-D	~/tests/test_qseq/	-S ~/tests/test_sample_files/single
 ```
 
 ## Setup/Requirements
-- Download a [release](https://github.com/NuttyLogic/Demultiplexer/release), exract, and run. Demultiplex will work with python > 3.4.
+- Download a [release](https://github.com/NuttyLogic/Demultiplexer/release), extract, and run. Demultiplex will work with python > 3.4.
