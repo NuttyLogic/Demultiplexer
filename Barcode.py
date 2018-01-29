@@ -48,7 +48,7 @@ class Barcode:
         
         return self.barcode
 
-    def get(self):
+    def get(self) -> object:
         return self.barcode
 
     def get_number(self):

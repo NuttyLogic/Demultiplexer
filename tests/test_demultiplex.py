@@ -13,12 +13,8 @@ test_single_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_
                                                                       'N700_nextera_barcodes.txt',
                                                             file_label='rb')
 test_single_index_demultiplex.run(b1_reverse=True, b2_reverse=True)
-output_run_single = output_objects(sample_list=test_single_index_demultiplex.sample_list,
-                            output_directory='tests/test_output/',
-                            read_count=test_single_index_demultiplex.read_count)
-
 test_single_metrics = iterate_through_qseq(workers=2, demultiplex_instance=test_single_index_demultiplex,
-                                           output_dictionary=output_run_single, gnu_zipped=False)
+                                           output_directory='tests/test_output/', gnu_zipped=False)
 
 test_dual_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_test.^.qseq.txt',
                                                           '3_test.^.qseq.txt', '4_test.^.qseq.txt',
@@ -29,12 +25,10 @@ test_dual_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_te
                                                           file_label='rbbr'
                                                           )
 test_dual_index_demultiplex.run(b1_reverse=True, b2_reverse=True)
-output_run_dual = output_objects(sample_list=test_dual_index_demultiplex.sample_list,
-                            output_directory='tests/test_output/',
-                            read_count=test_dual_index_demultiplex.read_count)
+
 
 test_dual_metrics = iterate_through_qseq(workers=2, demultiplex_instance=test_dual_index_demultiplex,
-                                           output_dictionary=output_run_dual, gnu_zipped=False)
+                                           output_directory='tests/test_output/', gnu_zipped=False)
 
 
 class TestDemultiplex(unittest.TestCase):
@@ -43,13 +37,13 @@ class TestDemultiplex(unittest.TestCase):
         pass
 
     def test_single_filter_pass(self):
-        self.assertEqual(sum(test_single_metrics.reads_pass_filter), 19614)
+        self.assertEqual(test_single_metrics[3], 19614)
 
     def test_single_unmatched_reads(self):
-        self.assertEqual(sum(test_single_metrics.unmatched_reads), 2774)
+        self.assertEqual(test_single_metrics[1], 2774)
 
     def test_single_index_reads(self):
-        self.assertEqual(sum(test_single_metrics.indexed_reads), 16840)
+        self.assertEqual(test_single_metrics[2], 16840)
 
     def test_single_samples(self):
         x = test_single_index_demultiplex.file_list[0][0].replace('1_test', '')
@@ -57,19 +51,18 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(x, y)
 
     def test_dual_filter_pass(self):
-        self.assertEqual(sum(test_dual_metrics.reads_pass_filter), 19264)
+        self.assertEqual(test_dual_metrics[3], 19264)
 
     def test_total_reads(self):
-        self.assertEqual(sum(test_dual_metrics.reads), sum(test_single_metrics.reads))
+        self.assertEqual(test_dual_metrics[0], test_single_metrics[0])
 
     def test_dual_unmatched_reads(self):
-        self.assertEqual(sum(test_dual_metrics.unmatched_reads), 9420)
+        self.assertEqual(test_dual_metrics[1], 9420)
 
     def test_dual_index_reads(self):
-        self.assertEqual(sum(test_dual_metrics.indexed_reads), 9844)
+        self.assertEqual(test_dual_metrics[2], 9844)
 
     def test_dual_samples(self):
-        print(test_dual_index_demultiplex.file_list)
         x = test_dual_index_demultiplex.file_list[2][0].replace('3_test', '')
         y = test_dual_index_demultiplex.file_list[3][0].replace('4_test', '')
         self.assertEqual(x, y)
