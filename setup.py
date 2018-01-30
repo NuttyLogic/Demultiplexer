@@ -19,6 +19,7 @@ def my_test_suite():
     test_suite = test_loader.discover('tests', pattern='test_*.py')
     return test_suite
 
+
 setup(name='Demultiplexer',
       version='0.4.0',
       description='Demultiplex Illumina lane .qseq files to sample .fastq files',
