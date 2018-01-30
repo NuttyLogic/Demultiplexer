@@ -17,7 +17,7 @@ class ProcessQseq:
         self.right_offset = class_arguments[6]
         self.sample_key = class_arguments[7]
         self.read_count = class_arguments[8]
-        self.queue = class_arguments[9]
+        self.output_dictionary = class_arguments[9]
         self.metrics = class_arguments[10]
         self.run()
 
@@ -81,22 +81,20 @@ class ProcessQseq:
                         unmatched_read += 1
                         sample = 'unmatched'
                     # retrieve list of output objects
-                    out = [sample, []]
+                    out = self.output_dictionary[sample]
                     # write line to file
-                    for out_count in range(self.read_count):
+                    for out_count, output_object in enumerate(out):
                         # convert qseq line to fatq format
-                        out[1].append(qseq_fastq_conversion(line[read_indexes[out_count]]))
-
+                        output_object.write(qseq_fastq_conversion(line[read_indexes[out_count]]))
                 else:
                     # if barcode sequence not in dictionary write to unmatched
                     unmatched_read += 1
                     sample = 'unmatched'
-                    out = [sample, []]
+                    out = self.output_dictionary[sample]
                     # write line to file
-                    for out_count in range(self.read_count):
+                    for out_count, output_object in enumerate(out):
                         # convert qseq line to fatq format
-                        out[1].append(qseq_fastq_conversion(line[read_indexes[out_count]]))
-                self.queue.put(out)
+                        output_object.write(qseq_fastq_conversion(line[read_indexes[out_count]]))
         self.metrics[0] += reads
         self.metrics[1] += unmatched_read
         self.metrics[2] += indexed_reads

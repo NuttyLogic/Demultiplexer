@@ -7,8 +7,7 @@ import argparse
 
 
 def launch_demultiplex(*args, directory='path', sample_key='path', file_label='', barcode_1=None,
-                       barcode_2=None, output_directory=None, b1_reverse=False, b2_reverse=False, gnu_zipped=False,
-                       workers=2):
+                       barcode_2=None, output_directory=None, b1_reverse=False, b2_reverse=False, gnu_zipped=False):
     """Simple function to initialize DemultiplexClass"""
     start_time = time.time()
     demultiplex_input = ProcessDemultiplexInput(*args, directory=directory,
@@ -17,7 +16,7 @@ def launch_demultiplex(*args, directory='path', sample_key='path', file_label=''
                                                 )
     demultiplex_input.run(b1_reverse=b1_reverse, b2_reverse=b2_reverse)
     run_metrics = iterate_through_qseq(demultiplex_instance=demultiplex_input,
-                                       output_directory=output_directory, gnu_zipped=gnu_zipped, workers=workers)
+                                       output_directory=output_directory, gnu_zipped=gnu_zipped)
 
     end_time = time.time()
     print('Total reads:' + str(run_metrics[0]))
@@ -46,8 +45,6 @@ parser.add_argument('-B2R', action="store_true", default=False, help='Consider B
 parser.add_argument('-L', type=str, help='string of r and b character to designate input files as '
                                          'barcode or read files, should be the same order as input'
                                          'file')
-parser.add_argument('-W', type=int, default=2, help='Number of cores available, default = 2')
-
 parser.add_argument('-O', type=str, help='path to output directory')
 parser.add_argument('-Z', action="store_true", default=False, help='if qseq files gzipped, slows processing')
 parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix separated'
@@ -59,7 +56,7 @@ arguments = parser.parse_args()
 try:
     print('Working')
     launch_demultiplex(*arguments.I, directory=arguments.D, barcode_1=arguments.B1, barcode_2=arguments.B2,
-                       sample_key=arguments.S, output_directory=arguments.O, workers=arguments.W, gnu_zipped=arguments.Z,
+                       sample_key=arguments.S, output_directory=arguments.O, gnu_zipped=arguments.Z,
                        file_label=arguments.L, b1_reverse=arguments.B1, b2_reverse=arguments.B2)
 except TypeError:
     print('python3 Demultiplex.py --help, for usage')
