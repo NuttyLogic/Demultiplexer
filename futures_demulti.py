@@ -4,7 +4,6 @@ from set_read_offset import BarcodeOffset
 from qseq_proccessing import *
 from fastq_output import *
 import multiprocessing as mp
-import queue
 
 
 def iterate_through_qseq(workers=8, demultiplex_instance='input_class', output_directory='path', gnu_zipped=False):
@@ -14,7 +13,7 @@ def iterate_through_qseq(workers=8, demultiplex_instance='input_class', output_d
     returns: NameTuple with read value"""
     # transpose iterator list
     iterator_file_list = list(map(list, zip(*demultiplex_instance.file_list)))
-    fastq_queue = queue.Queue()
+    fastq_queue = mp.Queue()
     BarcodeOffset(iterator_file_list[0], demultiplex_instance, gnu_zipped)
     read_stats = [0, 0, 0, 0]
     input_arguments = (demultiplex_instance.directory,

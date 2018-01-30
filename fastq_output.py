@@ -42,12 +42,14 @@ class FastqOut:
         self.output_dict['unmatched'] = object_list
 
     def output(self):
-        time.sleep(1)
+        time.sleep(10)
         while not self.input_queue.empty():
             sample_fastq = self.input_queue.get()
             output = self.output_dict[sample_fastq[0]]
             for sample in zip(sample_fastq[1], output):
                 sample[1].write(sample[0])
+            if self.input_queue.empty():
+                time.sleep(2)
         for output_object in self.output_dict.values():
             for out in output_object:
                 out.close()
