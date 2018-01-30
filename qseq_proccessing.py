@@ -19,6 +19,7 @@ class ProcessQseq:
         self.read_count = class_arguments[8]
         self.queue = class_arguments[9]
         self.metrics = class_arguments[10]
+        print('here')
         self.run()
 
     def run(self):
