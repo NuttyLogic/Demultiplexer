@@ -28,17 +28,17 @@ def iterate_through_qseq(workers=8, demultiplex_instance='input_class', output_d
                        demultiplex_instance.read_count,
                        fastq_queue,
                        read_stats)
-    for sample in iterator_file_list:
-        sample.append(input_arguments)
-    pool = mp.Pool(processes=workers - 1)
-    pool.map(ProcessQseq, iterator_file_list)
-    # Wait for jobs to complete before exiting
     fastq_output_tupple = (fastq_queue,
                            demultiplex_instance.sample_list,
                            output_directory,
                            demultiplex_instance.read_count)
     p = mp.Process(target=FastqOut, args=(fastq_output_tupple,))
     p.start()
+    for sample in iterator_file_list:
+        sample.append(input_arguments)
+    pool = mp.Pool(processes=workers - 1)
+    pool.map(ProcessQseq, iterator_file_list)
+    # Wait for jobs to complete before exiting
     # Safely terminate the pool
     pool.close()
     pool.join()

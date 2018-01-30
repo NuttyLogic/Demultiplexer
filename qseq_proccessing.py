@@ -3,6 +3,7 @@ from sequence_helpers import *
 
 
 class ProcessQseq:
+    """Iterates through qseq file grouping and export matched reads to multiprocessing queue"""
 
     def __init__(self, input_list):
         self.input_files = input_list[:-1]
