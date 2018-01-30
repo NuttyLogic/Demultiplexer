@@ -1,20 +1,17 @@
 import os
-import time
 
 
 class FastqOut:
 
     def __init__(self, input_list):
-        self.input_queue = input_list[0]
-        self.sample_list = input_list[1]
-        self.output_directory = input_list[2]
-        self.read_count = input_list[3]
+        self.sample_list = input_list[0]
+        self.output_directory = input_list[1]
+        self.read_count = input_list[2]
         self.output_dict = {}
         self.run()
 
     def run(self):
         self.output_objects()
-        self.output()
 
     def output_objects(self):
         """Initialized objects to output reads in fastq format, will generate a file for every 'read' labeled file in
@@ -40,16 +37,3 @@ class FastqOut:
                 object_list.append(open(self.output_directory + 'unmatched' + '_' +
                                         str(count + 1) + '.fastq', 'w'))
         self.output_dict['unmatched'] = object_list
-
-    def output(self):
-        time.sleep(10)
-        while not self.input_queue.empty():
-            sample_fastq = self.input_queue.get()
-            output = self.output_dict[sample_fastq[0]]
-            for sample in zip(sample_fastq[1], output):
-                sample[1].write(sample[0])
-            if self.input_queue.empty():
-                time.sleep(2)
-        for output_object in self.output_dict.values():
-            for out in output_object:
-                out.close()

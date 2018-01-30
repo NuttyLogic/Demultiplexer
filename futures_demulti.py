@@ -6,14 +6,17 @@ from fastq_output import *
 import multiprocessing as mp
 
 
-def iterate_through_qseq(workers=8, demultiplex_instance='input_class', output_directory='path', gnu_zipped=False):
+def iterate_through_qseq(demultiplex_instance='input_class', output_directory='path', gnu_zipped=False):
     """function to wrap process_qseq and set_barcode_offset
     -------------------------------------------------------
     inputs: ProcessDemultiplexInput.instance, Output_dictionary, gnu_zipped status
     returns: NameTuple with read value"""
     # transpose iterator list
+    fastq_output_tupple = (demultiplex_instance.sample_list,
+                           output_directory,
+                           demultiplex_instance.read_count)
+    fastq_out = FastqOut(fastq_output_tupple)
     iterator_file_list = list(map(list, zip(*demultiplex_instance.file_list)))
-    fastq_queue = mp.Queue()
     BarcodeOffset(iterator_file_list[0], demultiplex_instance, gnu_zipped)
     read_stats = [0, 0, 0, 0]
     input_arguments = (demultiplex_instance.directory,
@@ -25,18 +28,11 @@ def iterate_through_qseq(workers=8, demultiplex_instance='input_class', output_d
                        demultiplex_instance.right_offset,
                        demultiplex_instance.sample_key,
                        demultiplex_instance.read_count,
-                       fastq_queue,
+                       fastq_out.output_dict,
                        read_stats)
-    fastq_output_tupple = (fastq_queue,
-                           demultiplex_instance.sample_list,
-                           output_directory,
-                           demultiplex_instance.read_count)
-    p = mp.Process(target=FastqOut, args=(fastq_output_tupple,))
-    p.start()
     for sample in iterator_file_list:
         sample.append(input_arguments)
         ProcessQseq(sample)
     # Wait for jobs to complete before exiting
     # Safely terminate the pool
-    p.join()
     return read_stats
