@@ -36,7 +36,7 @@ def iterate_through_qseq(workers=8, demultiplex_instance='input_class', output_d
     p.start()
     for sample in iterator_file_list:
         sample.append(input_arguments)
-    pool = mp.Pool(processes=workers - 1)
+    pool = mp.Pool(processes=workers - 2)
     pool.map(ProcessQseq, iterator_file_list)
     # Wait for jobs to complete before exiting
     # Safely terminate the pool
