@@ -1,18 +1,17 @@
 # Demultiplexer
 
 Script to demultiplex .qseq files to .fastq files. The current version supports single and dual index barcodes. The script is hash based,
-and calculates 3 mismatches by defualt.  
+and calculates 3 mismatches by default.  
 
 ## Usage
 
 ```python
-python3 Demultiplex -W cores -D directory -S sample_key -B1 barcode_1 -B2 barcode_2 -L file_labels -O output_directory -I input_file_1 input_file_2 ...
+python3 Demultiplex -D directory -S sample_key -B1 barcode_1 -B2 barcode_2 -L file_labels -O output_directory -I input_file_1 input_file_2 ...
 ```
 
 ## Inputs
 
 - -D, /path/ to qseq directory
-- -W, Number of cores available, default = 2
 - -S, /path/sample_file.txt; file should be formatted as 'barcode tab sample_name' for single index and 'barcode tab barcode tab sample_name for dual indexes, see ~/tests/single_index_test or ~/tests/dual_index_test for an example
 - -B1, /path/barcode_1_file, line separated list of barcodes
 - -B2, /path/barcode_2_file, line separated list of barcodes
