@@ -44,7 +44,6 @@ class FastqOut:
     def output(self):
         time.sleep(.5)
         while not self.input_queue.empty():
-            print('Out')
             sample_fastq = self.input_queue.get()
             output = self.output_dict[sample_fastq[0]]
             for sample in zip(sample_fastq[1], output):
