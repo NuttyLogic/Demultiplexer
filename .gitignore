@@ -112,3 +112,4 @@ venv.bak/
 .idea/workspace.xml
 .idea/vcs.xml
 test_environment.py
+scratch.py
