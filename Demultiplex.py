@@ -7,7 +7,7 @@ import argparse
 
 
 def launch_demultiplex(*args, directory='path', sample_key='path', file_label='', barcode_1=None,
-                       barcode_2=None, output_directory=None, b1_reverse=False, b2_reverse=False, gnu_zipped=False):
+                       barcode_2=None, output_directory=None, b1_reverse=False, b2_reverse=False):
     """Simple function to initialize DemultiplexClass"""
     start_time = time.time()
     demultiplex_input = ProcessDemultiplexInput(*args, directory=directory,
@@ -16,7 +16,7 @@ def launch_demultiplex(*args, directory='path', sample_key='path', file_label=''
                                                 )
     demultiplex_input.run(b1_reverse=b1_reverse, b2_reverse=b2_reverse)
     run_metrics = iterate_through_qseq(demultiplex_instance=demultiplex_input,
-                                       output_directory=output_directory, gnu_zipped=gnu_zipped)
+                                       output_directory=output_directory)
 
     end_time = time.time()
     print('Total reads:' + str(run_metrics[0]))
@@ -46,7 +46,6 @@ parser.add_argument('-L', type=str, help='string of r and b character to designa
                                          'barcode or read files, should be the same order as input'
                                          'file')
 parser.add_argument('-O', type=str, help='path to output directory')
-parser.add_argument('-Z', action="store_true", default=False, help='if qseq files gzipped, slows processing')
 parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix separated'
                                                     'by ^, ie. -I s_1_^.qseq.txt '
                                                     's_2_^.qseq.txt ')

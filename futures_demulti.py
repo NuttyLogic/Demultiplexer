@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-from set_read_offset import BarcodeOffset
 from qseq_proccessing import *
 from fastq_output import *
-import multiprocessing as mp
 
 
-def iterate_through_qseq(demultiplex_instance='input_class', output_directory='path', gnu_zipped=False):
+
+
+
+
+
+def iterate_through_qseq(demultiplex_instance='input_class', output_directory='path'):
     """function to wrap process_qseq and set_barcode_offset
     -------------------------------------------------------
     inputs: ProcessDemultiplexInput.instance, Output_dictionary, gnu_zipped status
