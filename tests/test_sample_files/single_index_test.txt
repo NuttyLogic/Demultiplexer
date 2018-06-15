@@ -1,6 +1,6 @@
-01	sample_1
-02	sample_2
-03	sample_3
-04	sample_4
-05	sample_5
-06	sample_6
+TAAGGCGA	sample_1
+CGTACTAG	sample_2
+AGGCAGAA	sample_3
+TCCTGAGC	sample_4
+GGACTCCT	sample_5
+TAGGCATG	sample_6

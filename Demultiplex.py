@@ -1,36 +1,38 @@
 #!/usr/bin/env python3
 
-from futures_demulti import *
-from demultiplex_input_process import ProcessDemultiplexInput
+from ProcessInputFiles import ParseInputFiles
+from DemultiplexRun import RunDemultiplex
 import time
 import argparse
 
 
-def launch_demultiplex(*args, directory='path', sample_key='path', file_label='', barcode_1=None,
-                       barcode_2=None, output_directory=None, b1_reverse=False, b2_reverse=False):
+def launch_demultiplex(*args, qseq_directory='path', sample_key='path', file_label='',
+                       output_directory=None, barcode_reverse=False, hamming_distance=1):
     """Simple function to initialize DemultiplexClass"""
     start_time = time.time()
-    demultiplex_input = ProcessDemultiplexInput(*args, directory=directory,
-                                                sample_key=sample_key,
-                                                barcode_1=barcode_1, barcode_2=barcode_2, file_label=file_label
-                                                )
-    demultiplex_input.run(b1_reverse=b1_reverse, b2_reverse=b2_reverse)
-    run_metrics = iterate_through_qseq(demultiplex_instance=demultiplex_input,
-                                       output_directory=output_directory)
+    demultiplex_input = ParseInputFiles(*args,
+                                        qseq_directory=qseq_directory,
+                                        sample_file=sample_key,
+                                        barcode_reverse=barcode_reverse,
+                                        file_label=file_label)
+    demultiplex_run = RunDemultiplex(input_object=demultiplex_input,
+                                     output_directory=output_directory,
+                                     ham_dist=hamming_distance)
+    run_metrics = demultiplex_run.run_stats
 
     end_time = time.time()
-    print('Total reads:' + str(run_metrics[0]))
-    print('Reads passing filter:' + str(run_metrics[3]))
-    print('Indexed reads:' + str(run_metrics[2]))
-    print('Unmatched reads:' + str(run_metrics[1]))
-    print('Total time:' + str(round((end_time - start_time) / 60.0, 2)) + ' minutes')
+    print('Total reads:%s' % str(run_metrics['reads']))
+    print('Reads passing filter:%s' % str(run_metrics['reads_passing_filter']))
+    print('Indexed reads:%s' % str(run_metrics['indexed_reads']))
+    print('Unmatched reads:%s' % str(run_metrics['unmatched_reads']))
+    print('Total time:%s minutes' % str(round((end_time - start_time) / 60.0, 2)))
 
 
 parser = argparse.ArgumentParser(description='Demultiplexing script. Script demultiplexes Illumnina qseq lane files '
                                              'outputing sample fastq files. Works with .gz and uncompressed qseq files.'
                                              ' Options for single and dual indexes'
-                                             '\n\n Usage; demultiplex -D directory -S sample_key'
-                                             ' -B1 barcode_1 -B2 barcode_2 -L file_labels -M mismatch_number -O '
+                                             '\n\n Usage; python3 Demultiplex.py -D directory -S sample_key'
+                                             ' -BR False -L file_labels -H hamming_distance_threshold -O '
                                              'output_directory -I input_file_1 input_file_2 ...')
 
 parser.add_argument('-D', type=str, help='/path/ to qseq directory')
@@ -38,24 +40,27 @@ parser.add_argument('-S', type=str, help='/path/sample_file.txt file should be f
                                          'barcode tab sample_name\' for single index and '
                                          '\'barcode tab barcode tab sample_name\' '
                                          'for dual indexes ')
-parser.add_argument('-B1', type=str, help='/path/barcode_1_file, barcode \t index key')
-parser.add_argument('-B2', type=str, default=None, help='/path/barcode_2_file, barcode \t index key')
-parser.add_argument('-B1R', action="store_true", default=False, help='Consider Barcode1 Reverse Complement')
-parser.add_argument('-B2R', action="store_true", default=False, help='Consider Barcode2 Reverse Complement')
+parser.add_argument('-BR', action="store_true", default=False, help='Consider Barcodes Reverse Complements')
 parser.add_argument('-L', type=str, help='string of r and b character to designate input files as '
                                          'barcode or read files, should be the same order as input'
                                          'file')
-parser.add_argument('-O', type=str, help='path to output directory')
+parser.add_argument('-O', type=str, help='Path to Output Directory')
 parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix separated'
                                                     'by ^, ie. -I s_1_^.qseq.txt '
                                                     's_2_^.qseq.txt ')
+parser.add_argument('-H', type=int, help='Minimum hamming distance threshold for a sequencing barcode to be considered,'
+                                         'default=1')
 arguments = parser.parse_args()
 
-
-try:
-    print('Working')
-    launch_demultiplex(*arguments.I, directory=arguments.D, barcode_1=arguments.B1, barcode_2=arguments.B2,
-                       sample_key=arguments.S, output_directory=arguments.O, gnu_zipped=arguments.Z,
-                       file_label=arguments.L, b1_reverse=arguments.B1, b2_reverse=arguments.B2)
-except TypeError:
-    print('python3 Demultiplex.py --help, for usage')
+if __name__ == "__main__":
+    try:
+        print('Working')
+        launch_demultiplex(*arguments.I,
+                           qseq_directory=arguments.D,
+                           sample_key=arguments.S,
+                           output_directory=arguments.O,
+                           file_label=arguments.L,
+                           barcode_reverse=arguments.BR,
+                           hamming_distance=arguments.H)
+    except TypeError:
+        print('python3 Demultiplex.py --help, for usage')

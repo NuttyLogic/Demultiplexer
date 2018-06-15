@@ -25,5 +25,5 @@ def qseq_fastq_conversion(qseq_list):
     line_3 = '+'
     # The quality output is a single value in qseq list
     quality = qseq_list[9]
-    fastq_out = fastq_id + '\n' + seq + '\n' + line_3 + '\n' + quality + '\n'
+    fastq_out = '%s\n%s\n%s\n%s\n' % (fastq_id, seq, line_3, quality)
     return fastq_out

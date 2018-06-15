@@ -3,9 +3,9 @@
 
 class Barcode:
 
-    def __init__(self, barcode, number):
+    def __init__(self, barcode, id):
         self.barcode = barcode
-        self.number = number
+        self.id = id
         self.complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 
     def __reversed__(self):
@@ -30,5 +30,5 @@ class Barcode:
     def __str__(self):
         return self.barcode
 
-    def get_number(self):
-        return self.number
+    def get_id(self):
+        return self.id

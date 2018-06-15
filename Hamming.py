@@ -22,12 +22,12 @@ class HammingDistance:
             difference = len(self.seq_barcode) - len(self.reference_barcode)
             hamming1 = self.hamming_dist(self.reference_barcode, self.seq_barcode[difference:])
             hamming2 = self.hamming_dist(self.reference_barcode, self.seq_barcode[:-difference])
-            self.hamming = sorted([hamming1, hamming2])[0]
+            self.hamming = sorted([hamming1, hamming2])[0] + abs(difference)
         else:
             difference = len(self.reference_barcode) - len(self.seq_barcode)
             hamming1 = self.hamming_dist(self.reference_barcode[difference:], self.seq_barcode)
             hamming2 = self.hamming_dist(self.reference_barcode[:-difference], self.seq_barcode)
-            self.hamming = sorted([hamming1, hamming2])[0]
+            self.hamming = sorted([hamming1, hamming2])[0] + abs(difference)
 
     @staticmethod
     def hamming_dist(string1, string2):

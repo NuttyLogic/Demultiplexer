@@ -3,31 +3,29 @@
 import subprocess
 import unittest
 
-from demultiplex_input_process import ProcessDemultiplexInput
-from futures_demulti import *
+from ProcessInputFiles import ParseInputFiles
+from DemultiplexRun import RunDemultiplex
+from Hamming import HammingDistance
 
-test_single_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_test.^.qseq.txt',
-                                                        directory='tests/test_qseq/',
-                                                        sample_key='tests/test_sample_files/single_index_test.txt',
-                                                        barcode_1='tests/test_sample_files/'
-                                                                  'N700_nextera_barcodes.txt',
+test_single_index_demultiplex = ParseInputFiles('1_test.^.qseq.txt', '2_test.^.qseq.txt',
+                                                        qseq_directory='tests/test_qseq/',
+                                                        sample_file='tests/test_sample_files/single_index_test.txt',
+                                                        barcode_reverse=False,
                                                         file_label='rb')
-test_single_index_demultiplex.run(b1_reverse=True, b2_reverse=True)
-test_single_metrics = iterate_through_qseq(demultiplex_instance=test_single_index_demultiplex,
-                                           output_directory='tests/test_output/', gnu_zipped=False)
 
-test_dual_index_demultiplex = ProcessDemultiplexInput('1_test.^.qseq.txt', '2_test.^.qseq.txt',
-                                                      '3_test.^.qseq.txt', '4_test.^.qseq.txt',
-                                                      directory='tests/test_qseq/',
-                                                      sample_key='tests/test_sample_files/dual_index_test.txt',
-                                                      barcode_1='tests/test_sample_files/N700_nextera_barcodes.txt',
-                                                      barcode_2='tests/test_sample_files/N500_nextera_barcodes.txt',
-                                                      file_label='rbbr'
-                                                      )
-test_dual_index_demultiplex.run(b1_reverse=True, b2_reverse=True)
 
-test_dual_metrics = iterate_through_qseq(demultiplex_instance=test_dual_index_demultiplex,
-                                         output_directory='tests/test_output/', gnu_zipped=False)
+test_dual_index_demultiplex = ParseInputFiles('1_test.^.qseq.txt', '2_test.^.qseq.txt',
+                                              '3_test.^.qseq.txt', '4_test.^.qseq.txt',
+                                              qseq_directory='tests/test_qseq/',
+                                              sample_file='tests/test_sample_files/dual_index_test.txt',
+                                              barcode_reverse=True,
+                                              file_label='rbbr')
+
+test_single_run = RunDemultiplex(input_object=test_single_index_demultiplex, output_directory='tests/test_output/', ham_dist=1)
+test_single_metrics = dict(test_single_run.run_stats)
+
+test_dual_run = RunDemultiplex(input_object=test_dual_index_demultiplex, output_directory='tests/test_output/', ham_dist=1)
+test_dual_metrics = dict(test_dual_run.run_stats)
 
 
 class TestDemultiplex(unittest.TestCase):
