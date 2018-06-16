@@ -5,10 +5,11 @@ class HammingDistance:
     """Calculates the similarity between a reference barcode and a sequencing read
      - because barcode sequences should be continuous """
 
-    def __init__(self, reference_barcode=None, seq_barcode=None):
+    def __init__(self, reference_barcode=None, seq_barcode=None, mixed_length=False):
         self.reference_barcode = reference_barcode
         self.seq_barcode = seq_barcode
         self.hamming = None
+        self.mixed_length = mixed_length
         if len(self.reference_barcode) == len(self.seq_barcode):
             self.get_same_hamming()
         else:
@@ -18,16 +19,22 @@ class HammingDistance:
         self.hamming = self.hamming_dist(self.reference_barcode, self.seq_barcode)
 
     def get_diff_hamming(self):
-        if self.reference_barcode < self.seq_barcode:
+        if len(self.reference_barcode) < len(self.seq_barcode):
             difference = len(self.seq_barcode) - len(self.reference_barcode)
             hamming1 = self.hamming_dist(self.reference_barcode, self.seq_barcode[difference:])
             hamming2 = self.hamming_dist(self.reference_barcode, self.seq_barcode[:-difference])
-            self.hamming = sorted([hamming1, hamming2])[0] + abs(difference)
+            if self.mixed_length:
+                self.hamming = sorted([hamming1, hamming2])[0] + abs(difference)
+            else:
+                self.hamming = sorted([hamming1, hamming2])[0]
         else:
             difference = len(self.reference_barcode) - len(self.seq_barcode)
             hamming1 = self.hamming_dist(self.reference_barcode[difference:], self.seq_barcode)
             hamming2 = self.hamming_dist(self.reference_barcode[:-difference], self.seq_barcode)
-            self.hamming = sorted([hamming1, hamming2])[0] + abs(difference)
+            if self.mixed_length:
+                self.hamming = sorted([hamming1, hamming2])[0] + abs(difference)
+            else:
+                self.hamming = sorted([hamming1, hamming2])[0]
 
     @staticmethod
     def hamming_dist(string1, string2):

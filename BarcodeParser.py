@@ -5,6 +5,17 @@ from Barcode import Barcode
 
 
 class BarcodeFileParser:
+    """Class to organize input barcodes into hamming objects and reference objects
+    Arguments:
+        barcode_list (list): list of str containing all barcodes for an index
+        rev (bool): consider reverse complement of barcodes
+    Attributes:
+        self.barcode_dict (dict): barcodes hashing to id, expanded with sequencing barcodes
+        self.hamming_dict (dict): barcodes hashing to id, not expanded used as reference
+        self.rev (bool): consider reverse complement of barcodes
+        self.barcode_list (list): list of input barcodes
+        self.get_barcodes (func): set barcode_dict and hamming dict
+        """
 
     def __init__(self, barcode_list=None, rev=False):
         self.barcode_dict = {}

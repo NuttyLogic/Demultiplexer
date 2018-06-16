@@ -2,6 +2,11 @@
 
 
 class Barcode:
+    """Wrapper for barcodes inputs
+    Arguments:
+        barcode (str): str listing barcode sequence
+        id (str/int): id for reference barcode
+        """
 
     def __init__(self, barcode, id):
         self.barcode = barcode
@@ -9,11 +14,7 @@ class Barcode:
         self.complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 
     def __reversed__(self):
-        """Simple reverse complement function used to initialize a barcode dictionary, (original sequence and reverse
-                complement both link to same hash in dictionary).
-                -----------------------------------------------------
-                string='string': string must be composed of BP ATGC
-                returns; reverse complement string"""
+        """Returns reverse complement of barcode -> str"""
         # reverse string
         reversed_string = []
 
@@ -28,7 +29,9 @@ class Barcode:
         return ''.join(reversed_string)
 
     def __str__(self):
+        """Returns barcode sequence"""
         return self.barcode
 
     def get_id(self):
+        """Returns barcode id """
         return self.id

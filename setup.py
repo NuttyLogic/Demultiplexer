@@ -21,13 +21,13 @@ def my_test_suite():
 
 
 setup(name='Demultiplexer',
-      version='0.4.0',
-      description='Demultiplex Illumina lane .qseq files to sample .fastq files',
+      version='1.0.0',
+      description='Illumina Lane Demultiplexer, .qseq lane files to .fastq sample files',
       author='Colin Farrell',
       author_email='colinpfarrell@gmail.com',
       license='MIT',
       include_package_data=True,
-      package_data={'': ['tests/tes_qseq/*.txt', 'tests/tes_sample_files/*.txt', '*.txt']},
+      package_data={'': ['tests/tes_qseq/*.txt', 'tests/test_sample_files/*.txt', '*.txt']},
       packages=find_packages(),
       test_suite='setup.my_test_suite'
       )

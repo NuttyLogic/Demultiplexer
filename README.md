@@ -13,10 +13,6 @@ python3 Demultiplex -D directory -S sample_key -B1 barcode_1 -B2 barcode_2 -L fi
 
 - -D, /path/ to qseq directory
 - -S, /path/sample_file.txt; file should be formatted as 'barcode tab sample_name' for single index and 'barcode tab barcode tab sample_name for dual indexes, see ~/tests/single_index_test or ~/tests/dual_index_test for an example
-- -B1, /path/barcode_1_file, line separated list of barcodes
-- -B2, /path/barcode_2_file, line separated list of barcodes
-- -B1R, Consider Barcode1 Reverse Complement
-- -B2R, Consider Barcode2 Reverse Complement
 - -L, string of r and b character to designate input files as barcode or read files, should be the same order as input files
 - -O, path to output directory
 - -Z, designate is inpute qseq files are gzipped, slows processing

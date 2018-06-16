@@ -7,8 +7,8 @@ import argparse
 
 
 def launch_demultiplex(*args, qseq_directory='path', sample_key='path', file_label='',
-                       output_directory=None, barcode_reverse=False, hamming_distance=1):
-    """Simple function to initialize DemultiplexClass"""
+                       output_directory=None, barcode_reverse=False, hamming_distance=1, mixed_length=False):
+    """Call demultiplex objects"""
     start_time = time.time()
     demultiplex_input = ParseInputFiles(*args,
                                         qseq_directory=qseq_directory,
@@ -17,7 +17,8 @@ def launch_demultiplex(*args, qseq_directory='path', sample_key='path', file_lab
                                         file_label=file_label)
     demultiplex_run = RunDemultiplex(input_object=demultiplex_input,
                                      output_directory=output_directory,
-                                     ham_dist=hamming_distance)
+                                     ham_dist=hamming_distance,
+                                     mixed_length=mixed_length)
     run_metrics = demultiplex_run.run_stats
 
     end_time = time.time()
@@ -48,8 +49,10 @@ parser.add_argument('-O', type=str, help='Path to Output Directory')
 parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix separated'
                                                     'by ^, ie. -I s_1_^.qseq.txt '
                                                     's_2_^.qseq.txt ')
-parser.add_argument('-H', type=int, help='Minimum hamming distance threshold for a sequencing barcode to be considered,'
-                                         'default=1')
+parser.add_argument('-H', type=int, default=0,
+                    help='Minimum hamming distance threshold for a sequencing barcode to be considered, default=0')
+parser.add_argument('-M', type=int, help='If the reference barcodes for an index contain barcodes of different length,'
+                    'hamming distance includes the difference in reference sequencing barcode length')
 arguments = parser.parse_args()
 
 if __name__ == "__main__":
@@ -61,6 +64,7 @@ if __name__ == "__main__":
                            output_directory=arguments.O,
                            file_label=arguments.L,
                            barcode_reverse=arguments.BR,
-                           hamming_distance=arguments.H)
+                           hamming_distance=arguments.H,
+                           mixed_length=arguments.M)
     except TypeError:
         print('python3 Demultiplex.py --help, for usage')
