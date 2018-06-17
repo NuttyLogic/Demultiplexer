@@ -44,5 +44,24 @@ python3 Demultiplex.py -D tests/test_qseq/ -S tests/test_sample_files/dual_index
 python3 Demultiplex.py -D tests/test_qseq/ -S tests/test_sample_files/dual_index_test.txt -L rbb -O tests/test_output/ -I 1_test.^.qseq.txt.gz 2_test.^.qseq.txt 3_test.^.qseq.txt 
 ```
 
+## Sample Key Formatting Example
+- Single Index Sample Key
+```
+TAAGGCGA	sample_1
+CGTACTAG	sample_2
+AGGCAGAA	sample_3
+TCCTGAGC	sample_4
+GGACTCCT	sample_5
+TAGGCATG	sample_6
+```
+- Dual Index Sample Key
+```
+TAAGGCGA	TAGATCGC	sample_1
+CGTACTAG	TAGATCGC	sample_2
+AGGCAGAA	TAGATCGC	sample_3
+TCCTGAGC	TAGATCGC	sample_4
+GGACTCCT	TAGATCGC	sample_5
+TAGGCATG	TAGATCGC	sample_6
+```
 ## Setup/Requirements
 - Download a [release](https://github.com/NuttyLogic/Demultiplexer/release), extract, and run. Demultiplex will work with python > 3.4.
