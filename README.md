@@ -1,44 +1,47 @@
 # Demultiplexer
 
-Script to demultiplex .qseq files to .fastq files. The current version supports single and dual index barcodes. The script is hash based,
-and calculates 3 mismatches by default.  
+Package to demultplex sequencing lane .qseq files to sample .fastq files. 
 
 ## Usage
 
-```python
-python3 Demultiplex -D directory -S sample_key -B1 barcode_1 -B2 barcode_2 -L file_labels -O output_directory -I input_file_1 input_file_2 ...
+```bash
+python3 Demultiplex.py -D directory -S sample_key -H 1 -BR -L file_labels -O output_directory -I input_file_1 input_file_2 ...
 ```
 
 ## Inputs
 
-- -D, /path/ to qseq directory
-- -S, /path/sample_file.txt; file should be formatted as 'barcode tab sample_name' for single index and 'barcode tab barcode tab sample_name for dual indexes, see ~/tests/single_index_test or ~/tests/dual_index_test for an example
-- -B1, /path/barcode_1_file, line separated list of barcodes
-- -B2, /path/barcode_2_file, line separated list of barcodes
-- -B1R, Consider Barcode1 Reverse Complement
-- -B2R, Consider Barcode2 Reverse Complement
-- -L, string of r and b character to designate input files as barcode or read files, should be the same order as input files
-- -O, path to output directory
-- -Z, designate is inpute qseq files are gzipped, slows processing
-- -I, qseq file prefix and suffix separated by \^, ie. -I s_1_.\^.qseq.txt s_2_.\^.qseq.txt
+  - -D            /path/ to qseq directory
+  - -S           /path/sample_file.txt file should be formatted as 'barcode
+                  tab sample_name' for single index and 'barcode tab barcode
+                  tab sample_name' for dual indexes
+  - -BR             Consider Barcodes Reverse Complements
+  - -L            string of r and b character to designate input files as
+                  barcode or read files, should be the same order as inputfile
+  - -O            Path to Output Directory
+  - -I [I [I ...]]  qseq file prefix and suffix separatedby ^, ie. -I
+                  s_1_^.qseq.txt s_2_^.qseq.txt
+  - -H             Minimum hamming distance threshold for a sequencing barcode
+                  to be considered, default=0
+  - -M             If the reference barcodes for an index contain barcodes of
+                  different length, return hamming distance plus length difference
 
 ## Examples
 
 ### Single Index Demultiplex
 
-```python
-python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -L 'rb' -M 1 -O ~/Demultiplexer/tests/test_output/ -I 1_test.^.qseq.txt 2_test.^.qseq.txt
+```bash
+python3 Demultiplex.py -D tests/test_qseq/ -S tests/test_sample_files/single_index_test.txt -L rb -O tests/test_output/ -I 1_test.^.qseq.txt.gz 2_test.^.qseq.txt
 ```
 ### Dual Index Demultiplex
 
-```python
-python3 Demultiplex -D ~/Demultiplexer/tests/test_qseq -W 2 -S ~/Demultiplexer/tests/test_sample_files/single_index_test.txt -B1 ~/Demultiplexer/tests/test_sample_files/N700_nextera_bacrodes.txt -B1R -B2 ~/Demultiplexer/tests/test_sample_files/N500_nextera_bacrodes.txt -B2R -L 'rbbr'  -O ~/Demultiplexer/tests/test_output/ -I 1_test.^.qseq.txt 2_test.^.qseq.txt 3_test.^.qseq.txt 4_test.^.qseq.txt
+```bash
+python3 Demultiplex.py -D tests/test_qseq/ -S tests/test_sample_files/dual_index_test.txt -L rbbr -O tests/test_output/ -I 1_test.^.qseq.txt.gz 2_test.^.qseq.txt 3_test.^.qseq.txt 4_test.^.qseq.txt
 ```
 
 ### Multiple Read Files with Single Index
 
-```python
-python3	Demultiplex.py	-D	~/tests/test_qseq/	-S ~/tests/test_sample_files/single_index_test.txt	-B1	~/tests/test_sample_files/N700_nextera_barcodes.txt	-W	2	-L	rrb	-O	~/tests/test_output/	-I	1_test.^.qseq.txt	4_test.^.qseq.txt 2_test.^.qseq.txt
+```bash
+python3 Demultiplex.py -D tests/test_qseq/ -S tests/test_sample_files/dual_index_test.txt -L rbb -O tests/test_output/ -I 1_test.^.qseq.txt.gz 2_test.^.qseq.txt 3_test.^.qseq.txt 
 ```
 
 ## Setup/Requirements

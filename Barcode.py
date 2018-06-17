@@ -2,18 +2,19 @@
 
 
 class Barcode:
+    """Wrapper for barcodes inputs
+    Arguments:
+        barcode (str): str listing barcode sequence
+        id (str/int): id for reference barcode
+        """
 
-    def __init__(self, barcode, number):
+    def __init__(self, barcode, id):
         self.barcode = barcode
-        self.number = number
+        self.id = id
         self.complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 
     def __reversed__(self):
-        """Simple reverse complement function used to initialize a barcode dictionary, (original sequence and reverse
-                complement both link to same hash in dictionary).
-                -----------------------------------------------------
-                string='string': string must be composed of BP ATGC
-                returns; reverse complement string"""
+        """Returns reverse complement of barcode -> str"""
         # reverse string
         reversed_string = []
 
@@ -27,29 +28,10 @@ class Barcode:
         # return joined string
         return ''.join(reversed_string)
 
-    def reverse(self):
-        """Simple reverse complement function used to initialize a barcode dictionary, (original sequence and reverse
-        complement both link to same hash in dictionary).
-        -----------------------------------------------------
-        string='string': string must be composed of BP ATGC
-        returns; reverse complement string"""
-        # reverse string
-        reversed_string = []
-
-        self.barcode = self.barcode[::-1]
-        # complementary bp lookup dictionary
-        bases = list(self.barcode)
-        # iterate over string list
-        for i in bases:
-            reversed_string.append(self.complement[i])
-
-        # return joined string
-        self.barcode = ''.join(reversed_string)
-        
+    def __str__(self):
+        """Returns barcode sequence"""
         return self.barcode
 
-    def get(self) -> object:
-        return self.barcode
-
-    def get_number(self):
-        return self.number
+    def get_id(self):
+        """Returns barcode id """
+        return self.id
