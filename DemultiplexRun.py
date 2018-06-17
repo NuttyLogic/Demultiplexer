@@ -11,7 +11,7 @@ from DemultiplexHelpers import qseq_fastq_conversion
 class RunDemultiplex:
     """Parsers qseq files and outputs formatted sample fastq files
     Arguments:
-        input_object (object): instance of ParseInputFiles class with all class attributes
+        input_object (class instance): instance of ParseInputFiles class with all class attributes
         output_directory (str): path to directory to output sample fastq files
         ham_dist (int): hamming threshold to consider sequencing barcode
         mixed_length (bool): if barcodes for an index are mixed length include distance difference in hamming value
@@ -91,7 +91,7 @@ class RunDemultiplex:
     def set_new_barcode(self, barcode, index):
         """Add barcode to seq barcode dict, set hashing ID based on hamming distance threshold and if hamming distance
         value is unique
-        Arugments:
+        Arguments:
             barcode (str): sequencing barcode observed
             index (int): index of barcode list, which index is the barcode for
         Attributes:
@@ -132,30 +132,36 @@ class RunDemultiplex:
 
     def iterate_through_qseq(self):
         """Iterate through qseq files and write out lines to fastq sample files
-        Attributes:
-            self.input_object.file_list
             """
         for grouping in self.input_object.file_list:
             for qseq_lines in MultipleQseqIterator(grouping, self.input_object.qseq_directory):
+                # add read for every loop
                 self.run_stats['reads'] += 1
+                # if all lines pass quality filter continue
                 if self.get_read_quality(qseq_lines):
+                    # add to reads passing filter
                     self.run_stats['reads_passing_filter'] += 1
                     barcodes = self.get_seq_barcodes(qseq_lines)
                     sample_id = []
+                    # retrieve sample id for each barcode index
                     for index, barcode in enumerate(barcodes):
                         try:
                             sample_id.append(self.demultiplex_barcode_dicts[index][barcode])
                         except KeyError:
+                            # if key error calculate hamming distance and add barcode to reference dict
                             sample_id.append(self.set_new_barcode(barcode, index))
                     if 'unmatched' in sample_id:
                         self.run_stats['unmatched_reads'] += 1
                     else:
                         self.run_stats['indexed_reads'] += 1
+                    # get sequencing reads
                     seq_reads = self.get_seq_reads(qseq_lines)
+                    # output reads
                     self.output_read('_'.join(sample_id), seq_reads)
 
     @staticmethod
     def get_read_quality(line):
+        """Check all qseq line pass illumina quality filter"""
         combined_filter = ''.join([qual[-1] for qual in line])
         if '0' not in combined_filter:
             return True

@@ -2,19 +2,22 @@ import os
 
 
 class FastqOut:
+    """Initialized objects to output reads in fastq format, will generate a file for every 'read' labeled file in
+        the file_label plus a file for unmatched reads
+    Arguments:
+        sample_dict (dict): dict of sample_id's
+        read_count (int): number of read files to output
+        output_directory (str): path to directory to write out file
+    Attributes:
+        self.output_dict (dict): dict hashing sample_ids to output objects
+        self.output_objects (func): set output_dict
+    """
 
     def __init__(self, sample_dict=None, read_count=None, output_directory=None):
         self.output_dict = {}
         self.output_objects(sample_dict=sample_dict, read_count=read_count, output_directory=output_directory)
 
     def output_objects(self, sample_dict=None, read_count=None, output_directory=None):
-        """Initialized objects to output reads in fastq format, will generate a file for every 'read' labeled file in
-        the file_label plus a file for unmatched reads
-        -----------------------------------------------------
-        output_directory = path to write files; folder must already exist
-        self.sample_list: list of input samples
-        self.read_count: number of read files labeled in file label
-        returns self.output_dict; hashes to output object based on sample name"""
         # initialize output objects for all samples
         for _, sample in sample_dict.items():
             object_list = []

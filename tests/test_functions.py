@@ -20,6 +20,8 @@ def test_ham(barcode_list, barcode_test_hams, mixed_length=False):
             hamming_list.append((ham_score, ref_barcode))
         hamming_list.sort()
         hammed_list.append(hamming_list)
+    hammed_list.sort()
+    print(hammed_list)
     return hammed_list
 
 

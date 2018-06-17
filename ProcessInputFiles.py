@@ -6,6 +6,31 @@ from BarcodeParser import BarcodeFileParser
 
 
 class ParseInputFiles:
+    """
+    Parse external sample key, and store args, input file is formatted as 'barcode\tbarcode\tsample_id' where barcode
+    the number of barcodes can be value >= 1
+    Arguments:
+        *args (str): strs specifying read file format ^ is used for read pair identifier
+        qseq_directory (str): path to input files
+        sample_file (str): path to file listing barcodes and sample ids
+        barcode_reverse (bool): consider reverse complement
+        file_label (str): str labeling input reads as sequencing reads or barcodes 'r' for seq read 'b' for barcode
+                          labels should match to input order of the *args
+    Attributes:
+        self.file_label (str): string describing input files
+        self.barcode_count (int): count of barcode in file_lablel
+        self.file_list (list): list of paired qseq files
+        self.file_description (list): input *args split by '^'
+        self.qseq_directory (str): path to qseq directory
+        self.sample_file (str): path to sample input file
+        self.barcode_reverse (bool): consider reverse complement
+        self.file_label (str): str describing input files as reads or barcodes
+        self.barcodes (list): list of index barcodes
+        self.sample_ids (dict): dict of sample name linked to barcode combination
+        self.read_count (int):  count of input seq files
+        self.barcode_count (int) count of input barcode files
+
+    """
 
     def __init__(self, *args, qseq_directory=None, sample_file=None,
                  barcode_reverse=False, file_label=None):
@@ -56,11 +81,7 @@ class ParseInputFiles:
     def get_directory_lists(self):
         """Link to directory, pull  list of files, combine files with same unique id. Function only works with files
         that have an integer as a unique id
-        -----------------------------------------------------
-        self.directory: path to illumina sequencing lane directory
-        self.file_description: list of lists containing sequencing file prefix and suffix, sequencing file designated
-        by prefix*suffix
-        returns; sorted list of relevant files names in directory"""
+        """
         file_list = os.listdir(self.qseq_directory)
         # initialize list to hold sample names (ie. coupled file IDs)
         sample_names = [[] for _ in range(len(self.file_description))]
@@ -87,9 +108,7 @@ class ParseInputFiles:
         """Parses string describing input files, the file_label should be formatted as r for read and b for barcode,
         so a string 'rbbr' would describe a four qseq file input with read barcode barcode read.  Used to properly
         parse the qseq files
-        -----------------------------------------------------
-        self.file_label: string describing input files
-        self.barcode_count: returns count of barcode in file_lablel as a downstream control"""
+       """
         label_list = []
         for character in self.file_label:
             if character.lower() == 'r':

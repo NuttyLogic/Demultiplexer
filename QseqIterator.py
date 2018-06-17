@@ -4,7 +4,13 @@ import gzip
 
 
 class QseqIterator:
-    """Open qseq files together and iterate over them as a group"""
+    """Initializes a qseq file iterator, opens gziped or plain text
+    Arguments:
+        qseq (str): path to qseq file
+    Attributes:
+        self.qseq (object): iteration object
+        self.process_line (func): return split qseq line
+        """
 
     def __init__(self, qseq=None):
         if qseq.endswith(".gz"):

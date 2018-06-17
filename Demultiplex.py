@@ -50,9 +50,9 @@ parser.add_argument('-I', type=str, nargs='*', help='qseq file prefix and suffix
                                                     'by ^, ie. -I s_1_^.qseq.txt '
                                                     's_2_^.qseq.txt ')
 parser.add_argument('-H', type=int, default=0,
-                    help='Minimum hamming distance threshold for a sequencing barcode to be considered, default=0')
-parser.add_argument('-M', type=int, help='If the reference barcodes for an index contain barcodes of different length,'
-                    'hamming distance includes the difference in reference sequencing barcode length')
+                    help='Minimum hamming distance threshold for a sequencing barcode to be considered, default=0 ')
+parser.add_argument('-M', type=int, help='If the reference barcodes for an index contain barcodes of different lengths,'
+                    ' return hamming distance plus barcode/read length difference')
 arguments = parser.parse_args()
 
 if __name__ == "__main__":

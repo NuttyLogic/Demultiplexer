@@ -4,15 +4,21 @@ from QseqIterator import QseqIterator
 
 
 class MultipleQseqIterator:
-    """Open qseq files together and iterate over them as a group"""
+    """Iterate through group of qseq files
+    Arguments:
+        input_files (list): list of files to iterate over
+        directory (str): path to qseq directory
+    Attributes:
+        self.iter_list (list): list of QseqIterator objects
+        """
 
     def __init__(self, input_files=None, directory=None):
         """Initiate iteration object, yield line in gseq files
          -----------------------------------------------------
          *args='path_to_gesq': returns an iterator object for paired sequencing files
          """
-        assert(input_files, list)
-        assert(directory, str)
+        assert(isinstance(input_files, list))
+        assert(isinstance(directory, str))
         self.iter_list = []
         # store files in list
         for file in input_files:
