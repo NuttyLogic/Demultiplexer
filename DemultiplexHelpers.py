@@ -15,7 +15,7 @@ def duplicates(lst, item):
 
 def qseq_fastq_conversion(qseq_list):
     """Convert a .qseq file to .fastq before output
-    Arugments:
+    Arguments:
         qseq_list (list): '\t' split qseq string
     Returns:
        formatted string in fastq format

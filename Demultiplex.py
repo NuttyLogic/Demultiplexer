@@ -29,8 +29,9 @@ def launch_demultiplex(*args, qseq_directory='path', sample_key='path', file_lab
     print('Total time:%s minutes' % str(round((end_time - start_time) / 60.0, 2)))
 
 
-parser = argparse.ArgumentParser(description='Demultiplexing script. Script demultiplexes Illumnina qseq lane files '
-                                             'outputing sample fastq files. Works with .gz and uncompressed qseq files.'
+parser = argparse.ArgumentParser(description='Demultiplexing script. Script demultiplexes Illumina qseq lane files '
+                                             'outputting sample fastq files. Works with .gz and '
+                                             'uncompressed qseq files.'
                                              ' Options for single and dual indexes'
                                              '\n\n Usage; python3 Demultiplex.py -D directory -S sample_key'
                                              ' -BR False -L file_labels -H hamming_distance_threshold -O '
