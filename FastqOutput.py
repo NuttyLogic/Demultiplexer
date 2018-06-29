@@ -26,9 +26,11 @@ class FastqOut:
                 object_list.append(open(output_path, 'w'))
             self.output_dict[sample] = object_list
         # initialize output objects for unmatched reads
+        unmatched_output = []
         for count in range(read_count):
             output_path = '%sunmatched_%s.fastq' % (output_directory, str(count + 1))
             if os.path.exists(output_path):
-                self.output_dict['unmatched'] = [open(output_path, 'a')]
+                unmatched_output.append(open(output_path, 'a'))
             else:
-                self.output_dict['unmatched'] = [open(output_path, 'w')]
+                unmatched_output.append(open(output_path, 'w'))
+        self.output_dict['unmatched'] = unmatched_output
