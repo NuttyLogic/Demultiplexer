@@ -1,6 +1,6 @@
 TAAGGCGA	sample_1
 CGTACTAG	sample_2
-AGGCAGAA	sample_3
+AGGCAGA	sample_3
 TCCTGAGC	sample_4
 GGACTCCT	sample_5
-TAGGCATG	sample_6
+TAGGCAT	sample_6

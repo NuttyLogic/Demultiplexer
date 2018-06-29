@@ -21,8 +21,8 @@ class HammingDistance:
       """
 
     def __init__(self, reference_barcode=None, seq_barcode=None, mixed_length=False):
-        self.reference_barcode = reference_barcode
-        self.seq_barcode = seq_barcode
+        self.reference_barcode = str(reference_barcode)
+        self.seq_barcode = str(seq_barcode)
         self.hamming = None
         self.mixed_length = mixed_length
         if len(self.reference_barcode) == len(self.seq_barcode):
@@ -39,8 +39,10 @@ class HammingDistance:
             difference = len(self.seq_barcode) - len(self.reference_barcode)
             # set str length starting at difference len
             for count in range(difference + 1):
+                start = count
+                end = len(self.seq_barcode) - difference + count
                 hamming_list.append(self.hamming_dist(self.reference_barcode,
-                                                      self.seq_barcode[count:-difference + count]))
+                                                      self.seq_barcode[start:end]))
             if self.mixed_length:
                 self.hamming = sorted(hamming_list)[0] + abs(difference)
             else:
@@ -48,7 +50,9 @@ class HammingDistance:
         else:
             difference = len(self.reference_barcode) - len(self.seq_barcode)
             for count in range(difference + 1):
-                hamming_list.append(self.hamming_dist(self.reference_barcode[count:-difference + count],
+                start = count
+                end = len(self.reference_barcode) - difference + count
+                hamming_list.append(self.hamming_dist(self.reference_barcode[start:end],
                                                       self.seq_barcode))
             if self.mixed_length:
                 self.hamming = sorted(hamming_list)[0] + abs(difference)
