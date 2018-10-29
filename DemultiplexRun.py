@@ -126,7 +126,12 @@ class RunDemultiplex:
             outs = self.output_objects[self.input_object.sample_ids[read_id]]
         except KeyError:
             outs = self.output_objects['unmatched']
+        read_count = 1
         for read, out in zip(seq_reads, outs):
+            # set PE read label
+            read[7] = str(read_count)
+            # increase read count
+            read_count += 1
             # format and write line
             out.write(qseq_fastq_conversion(read))
 
