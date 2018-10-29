@@ -20,6 +20,9 @@ def qseq_fastq_conversion(qseq_list):
     Returns:
        formatted string in fastq format
        """
+    # if read is greater then 1 set read as the second read in a pair
+    if int(qseq_list[7]) > 1:
+        qseq_list[7] = '2'
     # pull fastq header information
     fastq_id = '@%s:%s:%s:%s:%s:%s#%s/%s' % (qseq_list[0], qseq_list[1], qseq_list[2], qseq_list[3], qseq_list[4],
                                              qseq_list[5], qseq_list[6], qseq_list[7])

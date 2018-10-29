@@ -18,7 +18,7 @@ def my_test_suite():
 
 
 setup(name='Demultiplexer',
-      version='1.0.2',
+      version='1.0.3',
       description='Illumina Lane Demultiplexer, .qseq lane files to .fastq sample files',
       author='Colin Farrell',
       author_email='colinpfarrell@gmail.com',
