@@ -1,35 +1,39 @@
 #!/usr/bin/env python3
 
 import subprocess
+import os
 import unittest
 
 from ProcessInputFiles import ParseInputFiles
 from DemultiplexRun import RunDemultiplex
 
+test_directory = os.path.dirname(os.path.realpath(__file__))
+root_directory = '/'.join(test_directory.split('/')[0:-1]) + '/'
+
 test_single_index_demultiplex = ParseInputFiles('1_test.^.qseq.txt.gz', '2_test.^.qseq.txt',
-                                                qseq_directory='tests/test_qseq/',
-                                                sample_file='tests/test_sample_files/single_index_test.txt',
+                                                qseq_directory=test_directory + '/test_qseq/',
+                                                sample_file=test_directory + '/test_sample_files/single_index_test.txt',
                                                 barcode_reverse=False,
                                                 file_label='rb')
 
 
 test_dual_index_demultiplex = ParseInputFiles('1_test.^.qseq.txt.gz', '2_test.^.qseq.txt',
                                               '3_test.^.qseq.txt', '4_test.^.qseq.txt',
-                                              qseq_directory='tests/test_qseq/',
-                                              sample_file='tests/test_sample_files/dual_index_test.txt',
+                                              qseq_directory=test_directory + '/test_qseq/',
+                                              sample_file=test_directory + '/test_sample_files/dual_index_test.txt',
                                               barcode_reverse=True,
                                               file_label='rbbr')
 
 test_single_run = RunDemultiplex(input_object=test_single_index_demultiplex,
-                                 output_directory='tests/test_output/',
+                                 output_directory=test_directory + '/test_output/',
                                  ham_dist=1)
 test_single_metrics = dict(test_single_run.run_stats)
 
 test_dual_run = RunDemultiplex(input_object=test_dual_index_demultiplex,
-                               output_directory='tests/test_output/',
+                               output_directory=test_directory + '/test_output/',
                                ham_dist=1)
 test_dual_metrics = dict(test_dual_run.run_stats)
-
+print('fuck')
 
 class TestDemultiplex(unittest.TestCase):
     def setUp(self):
@@ -67,9 +71,10 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(x, y)
 
     def test_command_line_single_index(self):
-        parser_open = subprocess.run(['python3', 'Demultiplex.py', '-D', 'tests/test_qseq/', '-S',
-                                      'tests/test_sample_files/single_index_test.txt',
-                                      '-L', 'rb', '-O', 'tests/test_output/',
+        parser_open = subprocess.run(['python3', root_directory + 'Demultiplex.py', '-D',
+                                      test_directory + '/test_qseq/', '-S',
+                                      test_directory + '/test_sample_files/single_index_test.txt',
+                                      '-L', 'rb', '-O', test_directory + '/test_output/',
                                       '-I', '1_test.^.qseq.txt.gz', '2_test.^.qseq.txt'],
                                      stdout=subprocess.PIPE)
         output = parser_open.stdout
@@ -82,10 +87,11 @@ class TestDemultiplex(unittest.TestCase):
         self.assertEqual(unmatched, 2774)
 
     def test_command_line_dual_index(self):
-        parser_open = subprocess.run(['python3', 'Demultiplex.py', '-D', 'tests/test_qseq/', '-S',
-                                      'tests/test_sample_files/dual_index_test.txt', '-L', 'rbbr', '-O',
-                                      'tests/test_output/', '-I', '1_test.^.qseq.txt.gz', '2_test.^.qseq.txt',
-                                      '3_test.^.qseq.txt', '4_test.^.qseq.txt'],
+        parser_open = subprocess.run(['python3', root_directory + 'Demultiplex.py', '-D',
+                                      test_directory + '/test_qseq/', '-S',
+                                      test_directory + '/test_sample_files/dual_index_test.txt', '-L', 'rbbr', '-O',
+                                      test_directory + '/test_output/', '-I', '1_test.^.qseq.txt.gz',
+                                      '2_test.^.qseq.txt', '3_test.^.qseq.txt', '4_test.^.qseq.txt'],
                                      stdout=subprocess.PIPE)
         output = parser_open.stdout
         print(output)

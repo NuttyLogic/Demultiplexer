@@ -57,7 +57,7 @@ arguments = parser.parse_args()
 
 if __name__ == "__main__":
     try:
-        print('Working')
+        print('Demultiplexing Samples')
         launch_demultiplex(*arguments.I,
                            qseq_directory=arguments.D,
                            sample_key=arguments.S,
